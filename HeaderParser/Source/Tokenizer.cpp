@@ -293,7 +293,9 @@ namespace hp {
                 (isHex && std::isxdigit(intc)));
 
             if (!isFloat || (c != 'f' && c != 'F'))
+            {
                 UngetChar();
+            }
 
             token.Type = TokenType::Const;
             if (!isFloat)

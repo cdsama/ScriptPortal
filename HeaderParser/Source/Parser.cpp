@@ -117,6 +117,11 @@ namespace hp {
                 Writer.String("volatile");
                 Writer.Bool(true);
             }
+            if (node.isStatic)
+            {
+                Writer.String("static");
+                Writer.Bool(true);
+            }
             TypeNodeVisitor::VisitNode(node);
             Writer.EndObject();
         }
@@ -712,12 +717,13 @@ namespace hp {
         WriteCurrentAccessControlType();
 
         // Process method specifiers in any particular order
-        bool isVirtual = false, isInline = false, isConstExpr = false;
+        bool isVirtual = false, isInline = false, isConstExpr = false, isStatic = false;
         for (bool matched = true; matched;)
         {
             matched = (!isVirtual && (isVirtual = MatchIdentifier("virtual"))) ||
                 (!isInline && (isInline = MatchIdentifier("inline"))) ||
-                (!isConstExpr && (isConstExpr = MatchIdentifier("constexpr")));
+                (!isConstExpr && (isConstExpr = MatchIdentifier("constexpr"))) ||
+                (!isStatic && (isStatic = MatchIdentifier("static"))) ;
         }
 
         // Write method specifiers
@@ -735,6 +741,11 @@ namespace hp {
         {
             Writer.String("constexpr");
             Writer.Bool(isConstExpr);
+        }
+        if (isStatic)
+        {
+            Writer.String("static");
+            Writer.Bool(isStatic);
         }
 
         // Parse the return type
@@ -784,7 +795,9 @@ namespace hp {
                     Token token;
                     GetToken(token);
                     if (token.Type == TokenType::Const)
+                    {
                         WriteToken(token);
+                    }
                     else
                     {
                         do
@@ -861,12 +874,13 @@ namespace hp {
         std::unique_ptr<TypeNode> node;
         Token token;
 
-        bool isConst = false, isVolatile = false, isMutable = false;
+        bool isConst = false, isVolatile = false, isMutable = false, isStatic = false;
         for (bool matched = true; matched;)
         {
             matched = (!isConst && (isConst = MatchIdentifier("const"))) ||
                 (!isVolatile && (isVolatile = MatchIdentifier("volatile"))) ||
-                (!isMutable && (isMutable = MatchIdentifier("mutable")));
+                (!isMutable && (isMutable = MatchIdentifier("mutable"))) || 
+                (!isStatic && (isStatic = MatchIdentifier("static")));
         }
 
         // Parse a literal value
@@ -983,6 +997,7 @@ namespace hp {
         // This stuff refers to the top node
         node->isVolatile = isVolatile;
         node->isMutable = isMutable;
+        node->isStatic = isStatic;
 
         return std::move(node);
     }

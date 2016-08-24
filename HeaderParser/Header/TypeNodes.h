@@ -23,6 +23,7 @@ namespace hp
         bool isConst = false;
         bool isVolatile = false;
         bool isMutable = false;
+        bool isStatic = false;
 
         Type type;
     };
