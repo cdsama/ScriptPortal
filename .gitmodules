@@ -1,0 +1,6 @@
+[submodule "ThirdParty/rapidjson"]
+	path = ThirdParty/rapidjson
+	url = https://github.com/miloyip/rapidjson.git
+[submodule "ThirdParty/tclap"]
+	path = ThirdParty/tclap
+	url = https://github.com/eile/tclap.git
