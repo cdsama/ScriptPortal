@@ -495,7 +495,7 @@ namespace hp {
     {
         if (!MatchSymbol(symbol)) 
         {
-            throw std::string("Expected {");
+            throw std::string("Expected ").append(symbol);
         }
     }
 }

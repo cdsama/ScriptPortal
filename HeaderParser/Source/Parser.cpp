@@ -191,7 +191,7 @@ namespace hp {
         }
         catch (std::string e)
         {
-            std::cerr<<"Error: "<< e <<"\n\tAt File:"<< FileName <<"\tLine:"<< CursorLine << std::endl;
+            std::cerr<<"Error: "<< e <<"\nFile: "<< FileName <<"\t Line: "<< CursorLine << std::endl;
             return false;
         }
 
