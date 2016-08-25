@@ -25,6 +25,12 @@ namespace hp
         Protected
     };
 
+    enum class Phase
+    {
+        Parsing,
+        ParseEnded,
+    };
+
     class Parser : private Tokenizer
     {
     public:
@@ -35,11 +41,14 @@ namespace hp
         Parser(const Parser& other) = delete;
         Parser(Parser&& other) = delete;
 
+        void Open();
         // Parses the given input
-        bool Parse(const char* Input);
+        bool Parse(const char* Input, const char* FileName);
+
+        void Close();
 
         /// Returns the result of a previous parse
-        std::string result() const { return std::string(Buffer.GetString(), Buffer.GetString() + Buffer.GetSize()); }
+        std::string result() const;
 
     protected:
         /// Called to parse the next statement. Returns false if there are no more statements.
@@ -89,7 +98,7 @@ namespace hp
 
         Scope Scopes[64];
         Scope *TopScope;
-
+        Phase phase;
         void ParseProperty(Token &token);
     };
 }

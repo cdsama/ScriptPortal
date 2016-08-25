@@ -131,42 +131,90 @@ namespace hp {
     };
 
     //--------------------------------------------------------------------------------------------------
-    Parser::Parser(const Options &options) : options(options), Writer(Buffer)
+    Parser::Parser(const Options &options) : options(options), Writer(Buffer), phase(Phase::ParseEnded)
     {
 
     }
-
+    
     //--------------------------------------------------------------------------------------------------
     Parser::~Parser()
     {
+        
+    }
 
+
+    void Parser::Open()
+    {
+        if (phase != Phase::ParseEnded)
+        {
+            throw;
+        }
+        Writer.StartArray();
+        phase = Phase::Parsing;
     }
 
     //--------------------------------------------------------------------------------------------------
-    bool Parser::Parse(const char *Input)
+    bool Parser::Parse(const char *Input, const char* FileName)
     {
+        if (phase != Phase::Parsing)
+        {
+            throw;
+        }
+
         // Pass the input to the tokenizer
         Reset(Input);
 
-        // Start the array
-        Writer.StartArray();
-
-        // Reset scope
-        TopScope = Scopes;
-        TopScope->name = "";
-        TopScope->type = ScopeType::Global;
-        TopScope->currentAccessControlType = AccessControlType::Public;
-
-        // Parse all statements in the file
-        while (ParseStatement())
+        try
         {
+            Writer.StartObject();
+            Writer.String("file");
+            Writer.String(FileName);
+            Writer.String("content");
+            // Start the array
+            Writer.StartArray();
 
+            // Reset scope
+            TopScope = Scopes;
+            TopScope->name = "";
+            TopScope->type = ScopeType::Global;
+            TopScope->currentAccessControlType = AccessControlType::Public;
+
+            // Parse all statements in the file
+            while (ParseStatement())
+            {
+
+            }
+
+            // End the array
+            Writer.EndArray();
+            Writer.EndObject();
+        }
+        catch (std::string e)
+        {
+            std::cerr<<"Error: "<< e <<"\n\tAt File:"<< FileName <<"\tLine:"<< CursorLine << std::endl;
+            return false;
         }
 
-        // End the array
-        Writer.EndArray();
-
         return true;
+    }
+
+    void Parser::Close()
+    {
+        if (phase != Phase::Parsing)
+        {
+            throw;
+        }
+        phase = Phase::ParseEnded;
+        Writer.EndArray();
+    }
+
+    std::string Parser::result() const
+    {
+        if (phase != Phase::ParseEnded)
+        {
+            throw;
+        }
+        return std::string(Buffer.GetString(), Buffer.GetString() + Buffer.GetSize());
     }
 
     //--------------------------------------------------------------------------------------------------
@@ -180,7 +228,7 @@ namespace hp {
 
         if (!ParseDeclaration(token))
         {
-            throw;
+            throw std::string("ParseDeclaration failed");
         }
 
         return true;
@@ -242,7 +290,7 @@ namespace hp {
         // Check the compiler directive
         if (!GetIdentifier(token))
         {
-            throw; // Missing compiler directive after #
+            throw std::string("Missing compiler directive after #"); // Missing compiler directive after #
         }
 
         bool multiLineEnabled = false;
@@ -328,7 +376,7 @@ namespace hp {
         Token enumToken;
         if (!GetIdentifier(enumToken))
         {
-            throw; // Missing enum name?
+            throw std::string("Missing enum name"); // Missing enum name?
         }
 
         Writer.String("name");
@@ -346,7 +394,7 @@ namespace hp {
             Token baseToken;
             if (!GetIdentifier(baseToken))
             {
-                throw; // Missing enum base
+                throw std::string("Missing enum base"); // Missing enum base
             }
 
             // Validate base token
@@ -427,7 +475,7 @@ namespace hp {
                 Token keyToken;
                 if (!GetIdentifier(keyToken))
                 {
-                    throw; // Expected identifier
+                    throw std::string("Expected identifier"); // Expected identifier
                 }
 
                 Writer.String(keyToken.token.c_str());
@@ -438,7 +486,7 @@ namespace hp {
                     Token token;
                     if (!GetToken(token))
                     {
-                        throw; // Expected token
+                        throw std::string("Expected token"); // Expected token
                     }
 
                     WriteToken(token);
@@ -464,7 +512,7 @@ namespace hp {
     {
         if (TopScope == Scopes + (sizeof(Scopes) / sizeof(Scope)) - 1)
         {
-            throw; // Max scope depth
+            throw std::string("Max scope depth"); // Max scope depth
         }
 
         TopScope++;
@@ -478,7 +526,7 @@ namespace hp {
     {
         if (TopScope == Scopes)
         {
-            throw; // Scope error
+            throw std::string("Scope error"); // Scope error
         }
 
         TopScope--;
@@ -494,7 +542,7 @@ namespace hp {
         Token token;
         if (!GetIdentifier(token))
         {
-            throw; // Missing namespace name
+            throw std::string("Missing namespace name"); // Missing namespace name
         }
 
         Writer.String("name");
@@ -569,7 +617,7 @@ namespace hp {
             Writer.String("private");
             break;
         default:
-            throw; // Unknown access control type
+            throw std::string("Unknown access control type"); // Unknown access control type
         }
     }
 
@@ -592,7 +640,7 @@ namespace hp {
         Token classNameToken;
         if (!GetIdentifier(classNameToken))
         {
-            throw; // Missing class name
+            throw std::string("Missing class name"); // Missing class name
         }
 
         Writer.String("name");
@@ -611,7 +659,7 @@ namespace hp {
                 Token accessOrName;
                 if (!GetIdentifier(accessOrName))
                 {
-                    throw; // Missing class or access control specifier
+                    throw std::string("Missing class or access control specifier"); // Missing class or access control specifier
                 }
 
                 // Parse the access control specifier
@@ -679,7 +727,7 @@ namespace hp {
         Token nameToken;
         if (!GetIdentifier(nameToken))
         {
-            throw; // Expected a property name
+            throw std::string("Expected a property name"); // Expected a property name
         }
 
         Writer.String("name");
@@ -755,7 +803,9 @@ namespace hp {
         // Parse the name of the method
         Token nameToken;
         if (!GetIdentifier(nameToken))
-            throw; // Expected method name
+        {
+            throw std::string("Expected method name"); // Expected method name
+        }
 
         Writer.String("name");
         Writer.String(nameToken.token.c_str());
@@ -782,7 +832,7 @@ namespace hp {
                 Writer.String("name");
                 if (!GetIdentifier(nameToken))
                 {
-                    throw; // Expected identifier
+                    throw std::string("Expected identifier"); // Expected identifier
                 }
                 Writer.String(nameToken.token.c_str());
 
@@ -835,7 +885,7 @@ namespace hp {
             Token token;
             if (!GetToken(token) || token.token != "0")
             {
-                throw; // Expected nothing else than null
+                throw std::string("Expected nothing else than null"); // Expected nothing else than null
             }
 
             Writer.String("abstract");
@@ -899,7 +949,7 @@ namespace hp {
             } while (MatchSymbol(","));
 
             if (!MatchSymbol(">")) {
-                throw; // Expected >
+                throw std::string("Expected >"); // Expected >
             }
 
             node.reset(templateNode.release());
@@ -951,7 +1001,7 @@ namespace hp {
                 GetToken(token);
                 if (token.token != ")" || (token.Type != TokenType::Identifier && !MatchSymbol(")")))
                 {
-                    throw;
+                    throw std::string("Expected ) or Identifier )");
                 }
             }
 
@@ -969,7 +1019,7 @@ namespace hp {
                     // Get , or name identifier
                     if (!GetToken(token))
                     {
-                        throw; // Unexpected end of file
+                        throw std::string("Unexpected end of file"); // Unexpected end of file
                     }
 
                     // Parse optional name
@@ -987,7 +1037,7 @@ namespace hp {
                 } while (MatchSymbol(","));
                 if (!MatchSymbol(")"))
                 {
-                    throw;
+                    throw std::string("Expected ) ");
                 }
             }
 
@@ -1032,7 +1082,7 @@ namespace hp {
             // Match an identifier
             if (!GetIdentifier(token))
             {
-                throw; // Expected identifier
+                throw std::string("Expected identifier"); // Expected identifier
             }
             declarator += token.token;
 
