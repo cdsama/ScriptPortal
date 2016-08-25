@@ -427,10 +427,14 @@ namespace hp {
     bool Tokenizer::GetIdentifier(Token &token)
     {
         if (!GetToken(token))
+        {
             return false;
+        }
 
         if (token.Type == TokenType::Identifier)
+        {
             return true;
+        }
 
         UngetToken(token);
         return false;
@@ -450,7 +454,9 @@ namespace hp {
         if (GetToken(token))
         {
             if (token.Type == TokenType::Identifier && token.token == identifier)
+            {
                 return true;
+            }
 
             UngetToken(token);
         }
@@ -465,7 +471,9 @@ namespace hp {
         if (GetToken(token, false, std::char_traits<char>::length(symbol) == 1 && symbol[0] == '>'))
         {
             if (token.Type == TokenType::Symbol && token.token == symbol)
+            {
                 return true;
+            }
 
             UngetToken(token);
         }
@@ -477,13 +485,17 @@ namespace hp {
     void Tokenizer::RequireIdentifier(const char *identifier)
     {
         if (!MatchIdentifier(identifier))
-            throw;
+        {
+            throw std::string("Expected ").append(identifier);
+        }
     }
 
     //--------------------------------------------------------------------------------------------------
     void Tokenizer::RequireSymbol(const char *symbol)
     {
-        if (!MatchSymbol(symbol))
-            throw;
+        if (!MatchSymbol(symbol)) 
+        {
+            throw std::string("Expected {");
+        }
     }
 }
