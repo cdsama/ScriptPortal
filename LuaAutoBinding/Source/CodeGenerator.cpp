@@ -3,6 +3,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
@@ -16,6 +17,7 @@ struct CodeGenerator::Impl
     std::stringstream ssInclude;
     std::stringstream ssNormal;
     std::stringstream ssGlobal;
+
     Impl()
     {
 
@@ -49,7 +51,7 @@ struct CodeGenerator::Impl
     void ParseDocument(const Document& document)
     {
         check(document.IsArray(), "Expected array root");
-        ssInclude << "#include <luaportal.h>;\n";
+        ssInclude << "#include <luaportal/LuaPortal.h>\n";
         for (SizeType i = 0; i< document.Size(); ++i)
         {
             auto& v = document[i];
@@ -59,10 +61,42 @@ struct CodeGenerator::Impl
 
     void ParseFile(const Document::ValueType& Object)
     {
-        check(Object.IsObject(), "Expected file root is object");
-        auto& itr = Object.FindMember("file");
-        check(itr != Object.MemberEnd(), "Expected content member : file");
+        check(Object.IsObject(), "Expected file root type : 'object'");
+        auto itr = Object.FindMember("file");
+        check(itr != Object.MemberEnd() && itr->value.IsString(), "Expected content member : 'file', type : string");
+        ssInclude << "#include \"" << itr->value.GetString() << "\"" << std::endl;
+        itr = Object.FindMember("content");
+        check(itr != Object.MemberEnd(), "Expected content member : 'content'");
+        ParseContent(itr->value);
+    }
 
+    void ParseContent(const Document::ValueType& Value)
+    {
+        check(Value.IsArray(), "Expected content root is array");
+        std::vector<std::string> NameSpaceStack;
+        for (SizeType i = 0; i< Value.Size(); ++i)
+        {
+            auto& Unit = Value[i];
+            check(Object.IsObject(), "Expected Unit type : 'object'");
+            auto itr = Unit->FindMember("type");
+            check(itr != Unit.MemberEnd() && itr->value.IsString(), "Expected Unit member : 'type' , type : string");
+            std::string type = itr->value.GetString();
+            if (type == "class")
+            {
+                ParseClass(Unit, NameSpaceStack);
+            }
+        }
+    }
+
+    void ParseClass(const Document::ValueType& ClassObject, std::vector<std::string>& NameSpaceStack)
+    {
+        auto itr = ClassObject->FindMember("name");
+        check(itr != ClassObject.MemberEnd() && itr->value.IsString(), "Expected Class member : 'name' , type : string");
+        std::string ClassName = itr->value.GetString();
+
+        NameSpaceStack.push_back(ClassName);
+
+        NameSpaceStack.pop_back();
     }
 
     std::string GetResult()
