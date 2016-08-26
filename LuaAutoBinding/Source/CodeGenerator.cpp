@@ -4,6 +4,8 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <unordered_set>
+#include <unordered_map>
 
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
@@ -17,6 +19,15 @@ struct CodeGenerator::Impl
     std::stringstream ssInclude;
     std::stringstream ssNormal;
     std::stringstream ssGlobal;
+
+    struct PendingRegistClass
+    {
+        Document::ValueType ClassValue;
+        std::vector<std::string> NameSpaceStack
+    };
+
+    std::unordered_map<std::string, PendingRegistClass> PendingRegistClasses;
+    std::unordered_set<std::string> RegistedClasses;
 
     Impl()
     {
