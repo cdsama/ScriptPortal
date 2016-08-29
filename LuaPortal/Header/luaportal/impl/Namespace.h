@@ -239,7 +239,7 @@ private:
             lua_pushvalue (L, -1);
             lua_setmetatable (L, -2);
             lua_pushboolean (L, 1);
-            lua_rawsetp (L, -2, getIdentityKey ());
+            lua_rawsetp (L, -2, GetIdentityKey ());
             lua_pushstring (L, (std::string ("const ") + name).c_str ());
             rawsetfield (L, -2, "__type");
             lua_pushcfunction (L, &indexMetaMethod);
@@ -268,7 +268,7 @@ private:
             lua_pushvalue (L, -1);
             lua_setmetatable (L, -2);
             lua_pushboolean (L, 1);
-            lua_rawsetp (L, -2, getIdentityKey ());
+            lua_rawsetp (L, -2, GetIdentityKey ());
             lua_pushstring (L, name);
             rawsetfield (L, -2, "__type");
             lua_pushcfunction (L, &indexMetaMethod);

@@ -54,7 +54,7 @@ template <typename C, typename... P>
 struct ConstructorFunc {
     static int placementProxy(lua_State* L) {
         auto place = UserdataValue<C>::place (L);
-        RecursiveNewData<C, P...>::call(L, 1, place->getVoidPointer());
+        RecursiveNewData<C, P...>::call(L, 1, place->GetVoidPointer());
         place->markConstructed();
         return 1;
     }

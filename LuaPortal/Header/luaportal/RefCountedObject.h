@@ -155,7 +155,7 @@ public:
      */
     template <typename DerivedClass>
     inline RefCountedObjectPtr (const RefCountedObjectPtr<DerivedClass>& other)
-    : referencedObject (static_cast <ReferenceCountedObjectClass*> (other.getObject()))
+    : referencedObject (static_cast <ReferenceCountedObjectClass*> (other.GetObject()))
     {
         if (referencedObject != 0)
             referencedObject->incReferenceCount();
@@ -179,7 +179,7 @@ public:
     template <typename DerivedClass>
     RefCountedObjectPtr& operator= (const RefCountedObjectPtr<DerivedClass>& other)
     {
-        return operator= (static_cast <ReferenceCountedObjectClass*> (other.getObject()));
+        return operator= (static_cast <ReferenceCountedObjectClass*> (other.GetObject()));
     }
     
 #if LUAPORTAL_COMPILER_SUPPORTS_MOVE_SEMANTICS
@@ -241,7 +241,7 @@ public:
     /** Returns the object that this pointer references.
      The pointer returned may be zero, of course.
      */
-    inline ReferenceCountedObjectClass* getObject() const
+    inline ReferenceCountedObjectClass* GetObject() const
     {
         return referencedObject;
     }
@@ -255,42 +255,42 @@ private:
 template <typename ReferenceCountedObjectClass>
 bool operator== (const RefCountedObjectPtr<ReferenceCountedObjectClass>& object1, ReferenceCountedObjectClass* const object2)
 {
-    return object1.getObject() == object2;
+    return object1.GetObject() == object2;
 }
 
 /** Compares two ReferenceCountedObjectPointers. */
 template <typename ReferenceCountedObjectClass>
 bool operator== (const RefCountedObjectPtr<ReferenceCountedObjectClass>& object1, const RefCountedObjectPtr<ReferenceCountedObjectClass>& object2)
 {
-    return object1.getObject() == object2.getObject();
+    return object1.GetObject() == object2.GetObject();
 }
 
 /** Compares two ReferenceCountedObjectPointers. */
 template <typename ReferenceCountedObjectClass>
 bool operator== (ReferenceCountedObjectClass* object1, RefCountedObjectPtr<ReferenceCountedObjectClass>& object2)
 {
-    return object1 == object2.getObject();
+    return object1 == object2.GetObject();
 }
 
 /** Compares two ReferenceCountedObjectPointers. */
 template <typename ReferenceCountedObjectClass>
 bool operator!= (const RefCountedObjectPtr<ReferenceCountedObjectClass>& object1, const ReferenceCountedObjectClass* object2)
 {
-    return object1.getObject() != object2;
+    return object1.GetObject() != object2;
 }
 
 /** Compares two ReferenceCountedObjectPointers. */
 template <typename ReferenceCountedObjectClass>
 bool operator!= (const RefCountedObjectPtr<ReferenceCountedObjectClass>& object1, RefCountedObjectPtr<ReferenceCountedObjectClass>& object2)
 {
-    return object1.getObject() != object2.getObject();
+    return object1.GetObject() != object2.GetObject();
 }
 
 /** Compares two ReferenceCountedObjectPointers. */
 template <typename ReferenceCountedObjectClass>
 bool operator!= (ReferenceCountedObjectClass* object1, RefCountedObjectPtr<ReferenceCountedObjectClass>& object2)
 {
-    return object1 != object2.getObject();
+    return object1 != object2.GetObject();
 }
 
 //==============================================================================
@@ -309,7 +309,7 @@ namespace luaportal
         
         static T* get (RefCountedObjectPtr <T> const& c)
         {
-            return c.getObject ();
+            return c.GetObject ();
         }
     };
     

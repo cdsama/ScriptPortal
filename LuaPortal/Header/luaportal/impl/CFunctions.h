@@ -362,7 +362,7 @@ struct CFunc
     template <typename C>
     static int gcMetaMethod (lua_State* L)
     {
-        Userdata* const ud = Userdata::getExact <C> (L, 1);
+        Userdata* const ud = Userdata::GetExact <C> (L, 1);
         ud->~Userdata ();
         return 0;
     }

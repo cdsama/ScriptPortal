@@ -22,7 +22,7 @@
  6. Our metatables have "__metatable" set to a boolean = false.
  7. Our lightuserdata is unique.
  */
-inline void* getIdentityKey ()
+inline void* GetIdentityKey ()
 {
     static char value;
     return &value;
@@ -40,7 +40,7 @@ protected:
     /**
      Get an untyped pointer to the contained class.
      */
-    inline void* const getPointer ()
+    inline void* const GetPointer ()
     {
         return m_p;
     }
@@ -54,7 +54,7 @@ private:
      const table, or else a Lua error is raised. This is used for the
      __gc metamethod.
      */
-    static Userdata* getExactClass (lua_State* L,
+    static Userdata* GetExactClass (lua_State* L,
                                     int narg,
                                     void const* classKey)
     {
@@ -75,7 +75,7 @@ private:
         if (!mismatch)
         {
             lua_getmetatable (L, index);
-            lua_rawgetp (L, -1, getIdentityKey ());
+            lua_rawgetp (L, -1, GetIdentityKey ());
             if (lua_isboolean (L, -1))
             {
                 lua_pop (L, 1);
@@ -146,7 +146,7 @@ private:
      the resulting Userdata represents to a const object. We do the type check
      first so that the error message is informative.
      */
-    static Userdata* getClass (lua_State* L,
+    static Userdata* GetClass (lua_State* L,
                                int index,
                                void const* baseClassKey,
                                bool canBeConst)
@@ -165,7 +165,7 @@ private:
         {
             // Make sure it's metatable is ours.
             lua_getmetatable (L, index);
-            lua_rawgetp (L, -1, getIdentityKey ());
+            lua_rawgetp (L, -1, GetIdentityKey ());
             if (lua_isboolean (L, -1))
             {
                 lua_pop (L, 1);
@@ -270,9 +270,9 @@ public:
      If the class does not match, a Lua error is raised.
      */
     template <typename T>
-    static inline Userdata* getExact (lua_State* L, int index)
+    static inline Userdata* GetExact (lua_State* L, int index)
     {
-        return getExactClass (L, index, ClassInfo <T>::GetClassKey ());
+        return GetExactClass (L, index, ClassInfo <T>::GetClassKey ());
     }
     
     //--------------------------------------------------------------------------
@@ -288,8 +288,8 @@ public:
         if (lua_isnil (L, index))
             return 0;
         else
-            return static_cast <T*> (getClass (L, index,
-                                               ClassInfo <T>::GetClassKey (), canBeConst)->getPointer ());
+            return static_cast <T*> (GetClass (L, index,
+                                               ClassInfo <T>::GetClassKey (), canBeConst)->GetPointer ());
     }
 };
 
@@ -310,7 +310,7 @@ private:
     
     char m_storage [sizeof (T)];
     
-    inline T* getObject ()
+    inline T* GetObject ()
     {
         // If this fails to compile it means you forgot to provide
         // a Container specialization for your container!
@@ -324,13 +324,13 @@ private:
      */
     UserdataValue ()
     {
-        m_p = getObject ();
+        m_p = GetObject ();
     }
     
     ~UserdataValue ()
     {
         if (constructed) {
-            getObject ()->~T ();
+            GetObject ()->~T ();
         } 
     }
     
@@ -352,9 +352,9 @@ public:
         return ud;
     }
     
-    void* getVoidPointer()
+    void* GetVoidPointer()
     {
-        return getPointer();
+        return GetPointer();
     }
     
     void markConstructed()
@@ -369,7 +369,7 @@ public:
     static inline void push (lua_State* const L, U const& u)
     {
         auto place = UserdataValue<U>::place (L);
-        new (place->getVoidPointer()) U (u);
+        new (place->GetVoidPointer()) U (u);
         place->markConstructed();
     }
 };
