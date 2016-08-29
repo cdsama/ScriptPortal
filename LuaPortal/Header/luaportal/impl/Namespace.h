@@ -453,11 +453,11 @@ private:
                 
                 // Map T back to its tables.
                 lua_pushvalue (L, -1);
-                lua_rawsetp (L, LUA_REGISTRYINDEX, ClassInfo <T>::getStaticKey ());
+                lua_rawsetp (L, LUA_REGISTRYINDEX, ClassInfo <T>::GetStaticKey ());
                 lua_pushvalue (L, -2);
-                lua_rawsetp (L, LUA_REGISTRYINDEX, ClassInfo <T>::getClassKey ());
+                lua_rawsetp (L, LUA_REGISTRYINDEX, ClassInfo <T>::GetClassKey ());
                 lua_pushvalue (L, -3);
-                lua_rawsetp (L, LUA_REGISTRYINDEX, ClassInfo <T>::getConstKey ());
+                lua_rawsetp (L, LUA_REGISTRYINDEX, ClassInfo <T>::GetConstKey ());
             }
             else
             {
@@ -505,18 +505,18 @@ private:
             rawsetfield (L, -2, "__parent");
             
             lua_pushvalue (L, -1);
-            lua_rawsetp (L, LUA_REGISTRYINDEX, ClassInfo <T>::getStaticKey ());
+            lua_rawsetp (L, LUA_REGISTRYINDEX, ClassInfo <T>::GetStaticKey ());
             lua_pushvalue (L, -2);
-            lua_rawsetp (L, LUA_REGISTRYINDEX, ClassInfo <T>::getClassKey ());
+            lua_rawsetp (L, LUA_REGISTRYINDEX, ClassInfo <T>::GetClassKey ());
             lua_pushvalue (L, -3);
-            lua_rawsetp (L, LUA_REGISTRYINDEX, ClassInfo <T>::getConstKey ());
+            lua_rawsetp (L, LUA_REGISTRYINDEX, ClassInfo <T>::GetConstKey ());
         }
         
         //--------------------------------------------------------------------------
         /**
          Continue registration in the enclosing namespace.
          */
-        Namespace endClass ()
+        Namespace EndClass ()
         {
             return Namespace (this);
         }
@@ -526,7 +526,7 @@ private:
          Add or replace a static data member.
          */
         template <typename U>
-        Class <T>& addStaticData (char const* name, U* pu, bool isWritable = true)
+        Class <T>& AddStaticData (char const* name, U* pu, bool isWritable = true)
         {
             assert (lua_istable (L, -1));
             
@@ -560,7 +560,7 @@ private:
          Add or replace a static data member.
          */
         template <typename U>
-        Class <T>& addStaticData (char const* name, const U& u, bool isWritable = true)
+        Class <T>& AddStaticData (char const* name, const U& u, bool isWritable = true)
         {
             assert (lua_istable (L, -1));
             
@@ -598,7 +598,7 @@ private:
          If the set function is null, the property is read-only.
          */
         template <typename U>
-        Class <T>& addStaticProperty (char const* name, U (*get)(), void (*set)(U) = 0)
+        Class <T>& AddStaticProperty (char const* name, U (*get)(), void (*set)(U) = 0)
         {
             typedef U (*get_t)();
             typedef void (*set_t)(U);
@@ -635,7 +635,7 @@ private:
          Add or replace a static member function.
          */
         template <typename FP>
-        Class <T>& addStaticFunction (char const* name, FP const fp)
+        Class <T>& AddStaticFunction (char const* name, FP const fp)
         {
             new (lua_newuserdata (L, sizeof (fp))) FP (fp);
             lua_pushcclosure (L, &CFunc::Call <FP>::f, 1);
@@ -648,7 +648,7 @@ private:
         /**
          Add or replace a lua_CFunction.
          */
-        Class <T>& addStaticCFunction (char const* name, int (*const fp)(lua_State*))
+        Class <T>& AddStaticCFunction (char const* name, int (*const fp)(lua_State*))
         {
             lua_pushcfunction (L, fp);
             rawsetfield (L, -2, name);
@@ -695,7 +695,7 @@ private:
          Add or replace a property member.
          */
         template <typename TG, typename TS>
-        Class <T>& addProperty (char const* name, TG (T::* get) () const, void (T::* set) (TS))
+        Class <T>& AddProperty (char const* name, TG (T::* get) () const, void (T::* set) (TS))
         {
             // Add to __propget in class and const tables.
             {
@@ -726,7 +726,7 @@ private:
         
         // read-only
         template <typename TG>
-        Class <T>& addProperty (char const* name, TG (T::* get) () const)
+        Class <T>& AddProperty (char const* name, TG (T::* get) () const)
         {
             // Add to __propget in class and const tables.
             rawgetfield (L, -2, "__propget");
@@ -754,7 +754,7 @@ private:
          argument respectively.
          */
         template <typename TG, typename TS>
-        Class <T>& addProperty (char const* name, TG (*get) (T const*), void (*set) (T*, TS))
+        Class <T>& AddProperty (char const* name, TG (*get) (T const*), void (*set) (T*, TS))
         {
             // Add to __propget in class and const tables.
             {
@@ -786,7 +786,7 @@ private:
         
         // read-only
         template <typename TG, typename TS>
-        Class <T>& addProperty (char const* name, TG (*get) (T const*))
+        Class <T>& AddProperty (char const* name, TG (*get) (T const*))
         {
             // Add to __propget in class and const tables.
             rawgetfield (L, -2, "__propget");
@@ -807,7 +807,7 @@ private:
          Add or replace a member function.
          */
         template <typename MemFn>
-        Class <T>& addFunction (char const* name, MemFn mf)
+        Class <T>& AddFunction (char const* name, MemFn mf)
         {
             CFunc::CallMemberFunctionHelper <MemFn, FuncTraits <MemFn>::isConstMemberFunction>::add (L, name, mf);
             return *this;
@@ -818,7 +818,7 @@ private:
          Add or replace a Lambda with member param.
          */
         template <typename Callable>
-        Class <T>& addLambda (char const* name,const Callable& ml)
+        Class <T>& AddLambda (char const* name,const Callable& ml)
         {
             assert (lua_istable (L, -1));
             typedef typename callable_traits<Callable>::function_type FunctionType;
@@ -835,7 +835,7 @@ private:
          Add or replace a Lambda with param.
          */
         template <typename Callable>
-        Class <T>& addStaticLambda (char const* name,const Callable& sl)
+        Class <T>& AddStaticLambda (char const* name,const Callable& sl)
         {
             assert (lua_istable (L, -1));
             typedef typename callable_traits<Callable>::function_type FunctionType;
@@ -851,7 +851,7 @@ private:
         /**
          Add or replace a member lua_CFunction.
          */
-        Class <T>& addCFunction (char const* name, int (T::*mfp)(lua_State*))
+        Class <T>& AddCFunction (char const* name, int (T::*mfp)(lua_State*))
         {
             typedef int (T::*MFP)(lua_State*);
             assert (lua_istable (L, -1));
@@ -866,7 +866,7 @@ private:
         /**
          Add or replace a const member lua_CFunction.
          */
-        Class <T>& addCFunction (char const* name, int (T::*mfp)(lua_State*) const)
+        Class <T>& AddCFunction (char const* name, int (T::*mfp)(lua_State*) const)
         {
             typedef int (T::*MFP)(lua_State*) const;
             assert (lua_istable (L, -1));
@@ -911,7 +911,7 @@ private:
         //        }
         
         template <typename ...Param>
-        Class <T>& def(Constructor<Param...>)
+        Class <T>& Def(Constructor<Param...>)
         {
             lua_pushcclosure (L, &ConstructorFunc<T, Param...>::placementProxy, 0);
             rawsetfield(L, -2, "__call");
@@ -919,7 +919,7 @@ private:
         }
         
         template <typename C,typename ...Param>
-        Class <T>& def(Constructor<Param...>)
+        Class <T>& Def(Constructor<Param...>)
         {
             lua_pushcclosure (L, &ConstructorFunc<C, Param...>::containerProxy, 0);
             rawsetfield(L, -2, "__call");
@@ -974,14 +974,14 @@ private:
             
         }
         
-        static int getEnum (lua_State* L)
+        static int GetEnum (lua_State* L)
         {
             assert(lua_isnumber(L, lua_upvalueindex(1)));
             lua_pushinteger(L, lua_tointeger(L, lua_upvalueindex(1)));
             return 1;
         }
         
-        Enum <T>& addEnumValue(char const * name, T t)
+        Enum <T>& AddEnumValue(char const * name, T t)
         {
             assert (lua_istable (L, -1));
             
@@ -989,7 +989,7 @@ private:
             assert (lua_istable (L, -1));
             
             Stack<T>::push(L, t);
-            lua_pushcclosure(L, &getEnum, 1);
+            lua_pushcclosure(L, &GetEnum, 1);
             rawsetfield(L, -2, name);
             lua_pop(L, 1);
             
@@ -1007,7 +1007,7 @@ private:
         /**
          Continue registration in the enclosing namespace.
          */
-        Namespace endEnum ()
+        Namespace EndEnum ()
         {
             return Namespace (this);
         }
@@ -1079,7 +1079,7 @@ private:
         child->pop (1);
         
         // It is not necessary or valid to call
-        // endNamespace() for the global namespace!
+        // EndNamespace() for the global namespace!
         //
         assert (m_stackSize != 0);
     }
@@ -1134,7 +1134,7 @@ public:
     /**
      Open a new or existing namespace for registrations.
      */
-    Namespace beginNamespace (char const* name)
+    Namespace BeginNamespace (char const* name)
     {
         return Namespace (name, this);
     }
@@ -1145,7 +1145,7 @@ public:
      
      Do not use this on the global namespace.
      */
-    Namespace endNamespace ()
+    Namespace EndNamespace ()
     {
         return Namespace (this);
     }
@@ -1155,7 +1155,7 @@ public:
      Add or replace a variable.
      */
     template <typename T>
-    Namespace& addVariable (char const* name, T* pt, bool isWritable = true)
+    Namespace& AddVariable (char const* name, T* pt, bool isWritable = true)
     {
         assert (lua_istable (L, -1));
         
@@ -1191,7 +1191,7 @@ public:
      If the set function is omitted or null, the property is read-only.
      */
     template <typename TG, typename TS>
-    Namespace& addProperty (char const* name, TG (*get) (), void (*set)(TS) = 0)
+    Namespace& AddProperty (char const* name, TG (*get) (), void (*set)(TS) = 0)
     {
         assert (lua_istable (L, -1));
         
@@ -1227,7 +1227,7 @@ public:
      Add or replace a free function.
      */
     template <typename FP>
-    Namespace& addFunction (char const* name, FP const fp)
+    Namespace& AddFunction (char const* name, FP const fp)
     {
         assert (lua_istable (L, -1));
         
@@ -1240,7 +1240,7 @@ public:
     
     
     template <typename Callable>
-    Namespace& addLambda (char const* name,const Callable& sl)
+    Namespace& AddLambda (char const* name,const Callable& sl)
     {
         assert (lua_istable (L, -1));
         typedef typename callable_traits<Callable>::function_type FunctionType;
@@ -1256,7 +1256,7 @@ public:
     /**
      Add or replace a lua_CFunction.
      */
-    Namespace& addCFunction (char const* name, int (*const fp)(lua_State*))
+    Namespace& AddCFunction (char const* name, int (*const fp)(lua_State*))
     {
         lua_pushcfunction (L, fp);
         rawsetfield (L, -2, name);
@@ -1269,7 +1269,7 @@ public:
      Open a new or existing class for registrations.
      */
     template <typename T>
-    Class <T> beginClass (char const* name)
+    Class <T> BeginClass (char const* name)
     {
         return Class <T> (name, this);
     }
@@ -1279,7 +1279,7 @@ public:
      Open a new or existing Enum for registrations.
      */
     template <typename T>
-    Enum <T> beginEnum (char const* name)
+    Enum <T> BeginEnum (char const* name)
     {
         return Enum <T> (name, this);
     }
@@ -1288,13 +1288,13 @@ public:
     /**
      Derive a new class for registrations.
      
-     To continue registrations for the class later, use beginClass().
+     To continue registrations for the class later, use BeginClass().
      Do not call deriveClass() again.
      */
     template <typename T, typename U>
-    Class <T> deriveClass (char const* name)
+    Class <T> DeriveClass (char const* name)
     {
-        return Class <T> (name, this, ClassInfo <U>::getStaticKey ());
+        return Class <T> (name, this, ClassInfo <U>::GetStaticKey ());
     }
 };
 

@@ -13,7 +13,7 @@ public:
      The static table holds the static data members, static properties, and
      static member functions for a class.
      */
-    static void const* getStaticKey ()
+    static void const* GetStaticKey ()
     {
         static char value;
         return &value;
@@ -25,7 +25,7 @@ public:
      of a class. Read-only data and properties, and const member functions are
      also placed here (to save a lookup in the const table).
      */
-    static void const* getClassKey ()
+    static void const* GetClassKey ()
     {
         static char value;
         return &value;
@@ -36,7 +36,7 @@ public:
      The const table holds read-only data members and properties, and const
      member functions of a class.
      */
-    static void const* getConstKey ()
+    static void const* GetConstKey ()
     {
         static char value;
         return &value;
