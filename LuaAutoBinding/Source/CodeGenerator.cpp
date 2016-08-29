@@ -12,22 +12,12 @@
 
 using namespace rapidjson;
 
-#define check(__expression__,__info__) if(!(__expression__)){throw std::string(__info__);}
-
 struct CodeGenerator::Impl
 {
     std::stringstream ssInclude;
     std::stringstream ssNormal;
     std::stringstream ssGlobal;
-
-    struct PendingRegistClass
-    {
-        Document::ValueType ClassValue;
-        std::vector<std::string> NameSpaceStack
-    };
-
-    std::unordered_map<std::string, PendingRegistClass> PendingRegistClasses;
-    std::unordered_set<std::string> RegistedClasses;
+    Document document;
 
     Impl()
     {
@@ -44,7 +34,6 @@ struct CodeGenerator::Impl
         std::stringstream buffer;
         buffer << ifs.rdbuf();
         ifs.close();
-        Document document;
         document.Parse(buffer.str().c_str());
         
         try
@@ -61,7 +50,6 @@ struct CodeGenerator::Impl
 
     void ParseDocument(const Document& document)
     {
-        check(document.IsArray(), "Expected array root");
         ssInclude << "#include <luaportal/LuaPortal.h>\n";
         for (SizeType i = 0; i< document.Size(); ++i)
         {
@@ -72,26 +60,17 @@ struct CodeGenerator::Impl
 
     void ParseFile(const Document::ValueType& Object)
     {
-        check(Object.IsObject(), "Expected file root type : 'object'");
-        auto itr = Object.FindMember("file");
-        check(itr != Object.MemberEnd() && itr->value.IsString(), "Expected content member : 'file', type : string");
-        ssInclude << "#include \"" << itr->value.GetString() << "\"" << std::endl;
-        itr = Object.FindMember("content");
-        check(itr != Object.MemberEnd(), "Expected content member : 'content'");
-        ParseContent(itr->value);
+        ssInclude << "#include \"" << Object["file"].GetString() << "\"" << std::endl;
+        ParseContent(Object["content"]);
     }
 
     void ParseContent(const Document::ValueType& Value)
     {
-        check(Value.IsArray(), "Expected content root is array");
         std::vector<std::string> NameSpaceStack;
         for (SizeType i = 0; i< Value.Size(); ++i)
         {
             auto& Unit = Value[i];
-            check(Object.IsObject(), "Expected Unit type : 'object'");
-            auto itr = Unit->FindMember("type");
-            check(itr != Unit.MemberEnd() && itr->value.IsString(), "Expected Unit member : 'type' , type : string");
-            std::string type = itr->value.GetString();
+            std::string type = Unit["type"].GetString();
             if (type == "class")
             {
                 ParseClass(Unit, NameSpaceStack);
@@ -99,15 +78,68 @@ struct CodeGenerator::Impl
         }
     }
 
+    std::string GetNameSpaceHead(const std::vector<std::string>& NameSpaceStack)
+    {
+        std::stringstream ss;
+        for (auto& ns : NameSpaceStack)
+        {
+            ss << ns << "::";
+        }
+        return ss.str();
+    }
+
     void ParseClass(const Document::ValueType& ClassObject, std::vector<std::string>& NameSpaceStack)
     {
-        auto itr = ClassObject->FindMember("name");
-        check(itr != ClassObject.MemberEnd() && itr->value.IsString(), "Expected Class member : 'name' , type : string");
-        std::string ClassName = itr->value.GetString();
+        std::string ClassName = ClassObject["name"].GetString();
+        std::string ParentClassName;
+        auto NameSpaceHead = GetNameSpaceHead(NameSpaceStack);
+        if (!ClassObject["meta"].HasMember("noinherit") && GetClassParent(ClassObject, ParentClassName))
+        {
+            
+            if (RegistedClasses.find(ParentClassName) != RegistedClasses.end())
+            {
+                ssNormal << ".DeriveClass<" << NameSpaceHead << ClassName << ", " << ParentClassName << ">(\"" << ClassName << "\")" << std::endl;
+            }
+            else
+            {
+
+            }
+        }
+        else 
+        {
+            ssNormal << ".BeginClass<" << NameSpaceHead << ClassName << ">(\"" << ClassName << "\")" << std::endl;
+        }
 
         NameSpaceStack.push_back(ClassName);
 
         NameSpaceStack.pop_back();
+
+        ssNormal << ".EndClass()" << std::endl;
+    }
+
+    bool GetClassParent(const Document::ValueType& ClassObject, std::string& OutParentClassName)
+    {
+        auto &ParentsArray= ClassObject["parents"];
+        if (!ParentsArray.IsArray())
+        {
+            return false;
+        }
+        for (SizeType i = 0; i < ParentsArray.Size(); ++i)
+        {
+            auto& ParentObject = ParentsArray[i];
+            if (ParentObject["access"].GetString() != "public")
+            {
+                continue;
+            }
+            auto& ParentName = ParentObject["name"];
+            if (ParentName["type"].GetString() != "literal")
+            {
+                continue;
+            }
+            OutParentClassName = ParentName["name"].GetString();
+            return true;
+        }
+        return false;
     }
 
     std::string GetResult()
