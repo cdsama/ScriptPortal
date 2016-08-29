@@ -1,0 +1,177 @@
+[
+    {
+        "file": "Object.h",
+        "content": [
+            {
+                "type": "include",
+                "file": "string"
+            },
+            {
+                "type": "enum",
+                "line": 3,
+                "meta": {},
+                "name": "ObjectType",
+                "cxxclass": true,
+                "base": "int",
+                "members": [
+                    {
+                        "key": "Player"
+                    },
+                    {
+                        "key": "Npc"
+                    },
+                    {
+                        "key": "Item"
+                    }
+                ]
+            },
+            {
+                "type": "class",
+                "line": 11,
+                "meta": {},
+                "name": "Object",
+                "members": [
+                    {
+                        "type": "function",
+                        "macro": "LUA_FUNCTION",
+                        "line": 24,
+                        "meta": {},
+                        "access": "public",
+                        "returnType": {
+                            "type": "reference",
+                            "baseType": {
+                                "const": true,
+                                "type": "literal",
+                                "name": "std::string"
+                            }
+                        },
+                        "name": "GetName",
+                        "arguments": []
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "file": "Player.h",
+        "content": [
+            {
+                "type": "include",
+                "file": "Object.h"
+            },
+            {
+                "type": "include",
+                "file": "sstream"
+            },
+            {
+                "type": "class",
+                "line": 4,
+                "meta": {},
+                "name": "Player",
+                "parents": [
+                    {
+                        "access": "public",
+                        "name": {
+                            "type": "literal",
+                            "name": "Object"
+                        }
+                    }
+                ],
+                "members": [
+                    {
+                        "type": "function",
+                        "macro": "LUA_FUNCTION",
+                        "line": 14,
+                        "meta": {},
+                        "access": "public",
+                        "returnType": {
+                            "type": "literal",
+                            "name": "std::string"
+                        },
+                        "name": "GetDiscribe",
+                        "arguments": []
+                    },
+                    {
+                        "type": "property",
+                        "line": 22,
+                        "meta": {
+                            "GET": null
+                        },
+                        "access": "public",
+                        "dataType": {
+                            "type": "literal",
+                            "name": "int"
+                        },
+                        "name": "ID"
+                    },
+                    {
+                        "type": "property",
+                        "line": 25,
+                        "meta": {
+                            "GET": null,
+                            "SET": null
+                        },
+                        "access": "public",
+                        "dataType": {
+                            "type": "literal",
+                            "name": "int"
+                        },
+                        "name": "IP"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "file": "PlayerManager.h",
+        "content": [
+            {
+                "type": "include",
+                "file": "Player.h"
+            },
+            {
+                "type": "class",
+                "line": 3,
+                "meta": {},
+                "name": "PlayerManager",
+                "members": [
+                    {
+                        "type": "function",
+                        "macro": "LUA_FUNCTION",
+                        "line": 8,
+                        "meta": {
+                            "global": null
+                        },
+                        "access": "public",
+                        "static": true,
+                        "returnType": {
+                            "type": "pointer",
+                            "baseType": {
+                                "type": "literal",
+                                "name": "PlayerManager"
+                            }
+                        },
+                        "name": "GetPlayerManager",
+                        "arguments": []
+                    },
+                    {
+                        "type": "function",
+                        "macro": "LUA_FUNCTION",
+                        "line": 11,
+                        "meta": {},
+                        "access": "public",
+                        "returnType": {
+                            "type": "pointer",
+                            "baseType": {
+                                "type": "literal",
+                                "name": "Player"
+                            }
+                        },
+                        "name": "GetPlayer",
+                        "arguments": []
+                    }
+                ]
+            }
+        ]
+    }
+]
