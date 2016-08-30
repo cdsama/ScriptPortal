@@ -1,5 +1,6 @@
 #include <string>
 
+// The type enum of an object.
 LUA_ENUM()
 enum class ObjectType : int
 {
@@ -21,6 +22,7 @@ public:
 
     virtual ~Object(){}
 
+    // Get name of an object.
     LUA_FUNCTION()
     const std::string& GetName(){
         return name;

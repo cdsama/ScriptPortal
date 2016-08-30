@@ -8,7 +8,8 @@
             },
             {
                 "type": "enum",
-                "line": 3,
+                "line": 4,
+                "comment": "The type enum of an object.",
                 "meta": {},
                 "name": "ObjectType",
                 "cxxclass": true,
@@ -27,14 +28,15 @@
             },
             {
                 "type": "class",
-                "line": 11,
+                "line": 12,
                 "meta": {},
                 "name": "Object",
                 "members": [
                     {
                         "type": "function",
                         "macro": "LUA_FUNCTION",
-                        "line": 24,
+                        "line": 26,
+                        "comment": "Get name of an object.",
                         "meta": {},
                         "access": "public",
                         "returnType": {
@@ -65,7 +67,8 @@
             },
             {
                 "type": "class",
-                "line": 4,
+                "line": 6,
+                "comment": "The class of a player data",
                 "meta": {},
                 "name": "Player",
                 "parents": [
@@ -81,7 +84,20 @@
                     {
                         "type": "function",
                         "macro": "LUA_FUNCTION",
-                        "line": 14,
+                        "line": 10,
+                        "meta": {},
+                        "access": "private",
+                        "returnType": {
+                            "type": "literal",
+                            "name": "void"
+                        },
+                        "name": "Test",
+                        "arguments": []
+                    },
+                    {
+                        "type": "function",
+                        "macro": "LUA_FUNCTION",
+                        "line": 20,
                         "meta": {},
                         "access": "public",
                         "returnType": {
@@ -93,7 +109,8 @@
                     },
                     {
                         "type": "property",
-                        "line": 22,
+                        "line": 29,
+                        "comment": "The id of a player",
                         "meta": {
                             "GET": null
                         },
@@ -106,7 +123,7 @@
                     },
                     {
                         "type": "property",
-                        "line": 25,
+                        "line": 32,
                         "meta": {
                             "GET": null,
                             "SET": null
@@ -171,6 +188,18 @@
                         "arguments": []
                     }
                 ]
+            },
+            {
+                "type": "function",
+                "macro": "LUA_FUNCTION",
+                "line": 19,
+                "meta": {},
+                "returnType": {
+                    "type": "literal",
+                    "name": "std::string"
+                },
+                "name": "GetCurrentTime",
+                "arguments": []
             }
         ]
     }

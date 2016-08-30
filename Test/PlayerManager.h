@@ -14,3 +14,7 @@ public:
 private:
     
 };
+
+// Get current time to string.
+LUA_FUNCTION()
+std::string GetCurrentTime();
