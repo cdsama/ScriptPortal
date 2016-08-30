@@ -69,7 +69,9 @@ namespace hp {
     char Tokenizer::GetLeadingChar()
     {
         if (!ThisComment.Text.empty())
+        {
             LastComment = ThisComment;
+        }
 
         ThisComment.Text = "";
         ThisComment.StartLine = CursorLine;
@@ -85,12 +87,16 @@ namespace hp {
             if (c == '\n')
             {
                 if (!ThisComment.Text.empty())
+                {
                     ThisComment.Text += "\n";
+                }
                 continue;
             }
 
             if (std::isspace(intc) || std::iscntrl(intc))
+            {
                 continue;
+            }
 
             // If this is a single line comment
             char next = peek();
@@ -113,18 +119,28 @@ namespace hp {
                     // Store the line
                     size_t lastSlashIndex = line.find_first_not_of("/");
                     if (lastSlashIndex == std::string::npos)
+                    {
                         line = "";
+                    }
                     else
+                    {
                         line = line.substr(lastSlashIndex);
+                    }
 
                     size_t firstCharIndex = line.find_first_not_of(" \t");
                     if (firstCharIndex == std::string::npos)
+                    {
                         line = "";
+                    }
                     else
+                    {
                         line = line.substr(firstCharIndex);
+                    }
 
                     if (firstCharIndex > indentationLastLine && !lines.empty())
+                    {
                         lines.back() += std::string(" ") + line;
+                    }
                     else
                     {
                         lines.emplace_back(std::move(line));
@@ -135,19 +151,25 @@ namespace hp {
                     while (!is_eof() && std::isspace(c = GetChar()));
 
                     if (!is_eof())
+                    {
                         next = peek();
+                    }
                 }
 
                 // Unget previously get char
                 if (!is_eof())
+                {
                     UngetChar();
+                }
 
                 // Build comment string
                 std::stringstream ss;
                 for (size_t i = 0; i < lines.size(); ++i)
                 {
                     if (i > 0)
+                    {
                         ss << "\n";
+                    }
                     ss << lines[i];
                 }
 
@@ -171,35 +193,47 @@ namespace hp {
                     if (c == '\n')
                     {
                         if (!lines.empty() || !line.empty())
+                        {
                             lines.emplace_back(line);
+                        }
                         line.clear();
                     }
                     else
                     {
                         if (!line.empty() || !(std::isspace(c) || c == '*'))
+                        {
                             line += c;
+                        }
                     }
                 }
 
                 // Skip past the slash
                 if (c != EndOfFileChar)
+                {
                     GetChar();
+                }
 
                 // Skip past new lines and spaces
                 while (!is_eof() && std::isspace(c = GetChar()));
                 if (!is_eof())
+                {
                     UngetChar();
+                }
 
                 // Remove empty lines from the back
                 while (!lines.empty() && lines.back().empty())
+                {
                     lines.pop_back();
+                }
 
                 // Build comment string
                 std::stringstream ss;
                 for (size_t i = 0; i < lines.size(); ++i)
                 {
                     if (i > 0)
+                    {
                         ss << "\n";
+                    }
                     ss << lines[i];
                 }
 
@@ -278,10 +312,14 @@ namespace hp {
             do
             {
                 if (c == '.')
+                {
                     isFloat = true;
+                }
 
                 if (c == 'x' || c == 'X')
+                {
                     isHex = true;
+                }
 
                 token.token.push_back(c);
                 c = GetChar();
@@ -346,15 +384,25 @@ namespace hp {
                 {
                     c = GetChar();
                     if (!std::char_traits<char>::not_eof(std::char_traits<char>::to_int_type(c)))
+                    {
                         break;
+                    }
                     else if (c == 'n')
+                    {
                         c = '\n';
+                    }
                     else if (c == 't')
+                    {
                         c = '\t';
+                    }
                     else if (c == 'r')
+                    {
                         c = '\r';
+                    }
                     else if (c == '"')
+                    {
                         c = '"';
+                    }
                 }
 
                 token.token.push_back(c);
@@ -362,7 +410,9 @@ namespace hp {
             }
 
             if (c != closingElement)
+            {
                 UngetChar();
+            }
 
             token.Type = TokenType::Const;
             token.constType = ConstType::String;

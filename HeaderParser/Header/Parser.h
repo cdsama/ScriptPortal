@@ -73,7 +73,7 @@ namespace hp
         void ParseClass(Token &token);
         void ParseFunction(Token &token, const std::string& macroName);
 
-        void ParseComment();
+        void ParseComment(bool WithNamespace = false);
 
         void ParseType();
 

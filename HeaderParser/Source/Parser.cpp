@@ -365,6 +365,7 @@ namespace hp {
 
         WriteCurrentAccessControlType();
 
+        ParseComment(true);
         ParseMacroMeta();
 
         RequireIdentifier("enum");
@@ -631,7 +632,8 @@ namespace hp {
         Writer.Uint((unsigned)token.StartLine);
 
         WriteCurrentAccessControlType();
-        ParseComment();
+
+        ParseComment(true);
         ParseMacroMeta();
 
         RequireIdentifier("class");
@@ -708,6 +710,7 @@ namespace hp {
         Writer.String("line");
         Writer.Uint((unsigned)token.StartLine);
 
+        ParseComment();
         ParseMacroMeta();
         WriteCurrentAccessControlType();
 
@@ -900,9 +903,10 @@ namespace hp {
     }
 
     //-------------------------------------------------------------------------------------------------
-    void Parser::ParseComment()
+    void Parser::ParseComment(bool WithNamespace)
     {
-        std::string comment = LastComment.EndLine == CursorLine ? LastComment.Text : "";
+        auto& TheComment = WithNamespace ? ThisComment : LastComment;
+        std::string comment = TheComment.EndLine == CursorLine ? TheComment.Text : "";
         if (!comment.empty())
         {
             Writer.String("comment");
