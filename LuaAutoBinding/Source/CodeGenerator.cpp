@@ -5,7 +5,6 @@
 #include <iostream>
 #include <list>
 #include <unordered_set>
-#include <unordered_map>
 #include <memory> 
 
 #include <rapidjson/rapidjson.h>
@@ -43,25 +42,17 @@ struct CodeGenerator::Impl
 
     struct LuaClass : Node {
         std::string ParentClass;
-        std::list<std::shared_ptr<LuaFunction>> Functions;
-        std::list<std::shared_ptr<LuaProperty>> Properties;
-        std::list<std::shared_ptr<LuaEnum>> Enums;
+        std::list<std::shared_ptr<Node>> Nodes;
         std::string Comment;
     };
 
     struct CxxNamespace : Node {
-        std::list<std::shared_ptr<LuaFunction>> Functions;
-        std::list<std::shared_ptr<CxxNamespace>> Namespaces;
-        std::list<std::shared_ptr<LuaClass>> Classes;
-        std::list<std::shared_ptr<LuaEnum>> Enums;
+        std::list<std::shared_ptr<Node>> Nodes;
     };
 
     struct HeaderFile : Node {
         std::list<std::string> IncludeFiles;
-        std::list<std::shared_ptr<LuaFunction>> GlobalFunctions;
-        std::list<std::shared_ptr<CxxNamespace>> Namespaces;
-        std::list<std::shared_ptr<LuaClass>> Classes;
-        std::list<std::shared_ptr<LuaEnum>> Enums;
+        std::list<std::shared_ptr<Node>> Nodes;
     };
 
     std::stringstream ssInclude;
@@ -69,7 +60,7 @@ struct CodeGenerator::Impl
     std::stringstream ssGlobal;
 
     std::list<std::shared_ptr<HeaderFile>> Files;
-    std::unordered_map<std::string, std::shared_ptr<HeaderFile>> FilesMap;
+    std::unordered_set<std::shared_ptr<HeaderFile>> UnregistedFiles;
     std::unordered_set<std::shared_ptr<HeaderFile>> RegistedFiles;
 
     std::string CurrentFile;
@@ -95,6 +86,8 @@ struct CodeGenerator::Impl
         ifs.close();
         document.Parse(buffer.str().c_str());
 
+        std::shared_ptr<Node> test = std::make_shared<HeaderFile>();
+
         try
         {
             ParseDocument(document);
@@ -105,8 +98,6 @@ struct CodeGenerator::Impl
             std::cerr << " Error: " << e << " Current File :" << CurrentFile << std::endl;
             return false;
         }
-
-
 
         return true;
     }
@@ -128,12 +119,18 @@ struct CodeGenerator::Impl
         else 
         {
             RegistedFiles.insert(File);
+            UnregistedFiles.erase(File);
         }
 
         for (auto& IncludeFileName : File->IncludeFiles)
         {
-
+            std::shared_ptr<HeaderFile> RegistFirstFile;
+            if ((!IsRegisted(IncludeFileName)) && IsUnregisted(IncludeFileName, RegistFirstFile))
+            {
+                GenerateFile(RegistFirstFile);
+            }
         }
+        
     }
 
     bool IsRegisted(const std::string& FileName)
@@ -148,12 +145,17 @@ struct CodeGenerator::Impl
         return false;
     }
 
-    bool IsInMap(const std::string& FileName, std::shared_ptr<HeaderFile>& FilePtr)
+    bool IsUnregisted(const std::string& FileName, std::shared_ptr<HeaderFile>& FilePtr)
     {
-        for (auto& itr : FilesMap)
+        for (auto& file : UnregistedFiles)
         {
-            itr.first;
+            if (file->Name.find(FileName) != std::string::npos)
+            {
+                FilePtr = file;
+                return true;
+            }
         }
+        return false;
     }
 
     void ParseDocument(const Document& document)
@@ -163,7 +165,7 @@ struct CodeGenerator::Impl
             auto& v = document[i];
             auto& file = ParseFile(v);
             Files.push_back(file);
-            FilesMap[file->Name] = file;
+            UnregistedFiles.insert(file);
         }
     }
 
@@ -179,11 +181,11 @@ struct CodeGenerator::Impl
             std::string type = Unit["type"].GetString();
             if (type == "class")
             {
-                File->Classes.push_back(ParseClass(Unit));
+                File->Nodes.push_back(ParseClass(Unit));
             }
             else if (type == "function")
             {
-                File->GlobalFunctions.push_back(ParseFunction(Unit));
+                File->Nodes.push_back(ParseFunction(Unit));
             }
             else if (type == "include")
             {
@@ -191,11 +193,11 @@ struct CodeGenerator::Impl
             }
             else if (type == "enum")
             {
-                File->Enums.push_back(ParseEnum(Unit));
+                File->Nodes.push_back(ParseEnum(Unit));
             }
             else if (type == "namespace")
             {
-                File->Namespaces.push_back(ParseNamespace(Unit));
+                File->Nodes.push_back(ParseNamespace(Unit));
             }
         }
         return File;
@@ -221,15 +223,15 @@ struct CodeGenerator::Impl
             std::string type = Unit["type"].GetString();
             if (type == "class")
             {
-                Namespace->Classes.push_back(ParseClass(Unit));
+                Namespace->Nodes.push_back(ParseClass(Unit));
             }
             else if (type == "function")
             {
-                Namespace->Functions.push_back(ParseFunction(Unit));
+                Namespace->Nodes.push_back(ParseFunction(Unit));
             }
             else if (type == "enum")
             {
-                Namespace->Enums.push_back(ParseEnum(Unit));
+                Namespace->Nodes.push_back(ParseEnum(Unit));
             }
         }
         return Namespace;
@@ -264,15 +266,15 @@ struct CodeGenerator::Impl
             std::string type = Unit["type"].GetString();
             if (type == "function")
             {
-                Class->Functions.push_back(ParseFunction(Unit));
+                Class->Nodes.push_back(ParseFunction(Unit));
             }
             else if (type == "property")
             {
-                Class->Properties.push_back(ParseProperty(Unit));
+                Class->Nodes.push_back(ParseProperty(Unit));
             }
             else if (type == "enum")
             {
-                Class->Enums.push_back(ParseEnum(Unit));
+                Class->Nodes.push_back(ParseEnum(Unit));
             }
         }
         TryGetComment(ClassObject, Class->Comment);
