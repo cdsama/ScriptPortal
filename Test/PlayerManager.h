@@ -18,3 +18,10 @@ private:
 // Get current time to string.
 LUA_FUNCTION()
 std::string GetCurrentTime();
+
+namespace Test
+{
+    // Get current time to string.
+    LUA_FUNCTION()
+    std::string GetCurrentTime();
+}

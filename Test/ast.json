@@ -84,20 +84,7 @@
                     {
                         "type": "function",
                         "macro": "LUA_FUNCTION",
-                        "line": 10,
-                        "meta": {},
-                        "access": "private",
-                        "returnType": {
-                            "type": "literal",
-                            "name": "void"
-                        },
-                        "name": "Test",
-                        "arguments": []
-                    },
-                    {
-                        "type": "function",
-                        "macro": "LUA_FUNCTION",
-                        "line": 20,
+                        "line": 16,
                         "meta": {},
                         "access": "public",
                         "returnType": {
@@ -109,10 +96,10 @@
                     },
                     {
                         "type": "property",
-                        "line": 29,
+                        "line": 25,
                         "comment": "The id of a player",
                         "meta": {
-                            "GET": null
+                            "readonly": null
                         },
                         "access": "public",
                         "dataType": {
@@ -123,11 +110,8 @@
                     },
                     {
                         "type": "property",
-                        "line": 32,
-                        "meta": {
-                            "GET": null,
-                            "SET": null
-                        },
+                        "line": 28,
+                        "meta": {},
                         "access": "public",
                         "dataType": {
                             "type": "literal",
@@ -200,6 +184,25 @@
                 },
                 "name": "GetCurrentTime",
                 "arguments": []
+            },
+            {
+                "type": "namespace",
+                "name": "Test",
+                "members": [
+                    {
+                        "type": "function",
+                        "macro": "LUA_FUNCTION",
+                        "line": 25,
+                        "comment": "Get current time to string.",
+                        "meta": {},
+                        "returnType": {
+                            "type": "literal",
+                            "name": "std::string"
+                        },
+                        "name": "GetCurrentTime",
+                        "arguments": []
+                    }
+                ]
             }
         ]
     }

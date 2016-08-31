@@ -6,10 +6,6 @@
 LUA_CLASS()
 class Player : public Object
 {
-
-    LUA_FUNCTION()
-    void Test();
-
 public:
     Player(const std::string& _name)
     : Object(const std::string& _name)
@@ -26,10 +22,10 @@ public:
     }
 
     // The id of a player
-    LUA_PROPERTY(GET)
+    LUA_PROPERTY(readonly)
     int ID;
 
-    LUA_PROPERTY(GET,SET)
+    LUA_PROPERTY()
     int IP;
 
 };
