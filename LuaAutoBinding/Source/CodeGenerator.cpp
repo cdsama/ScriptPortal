@@ -3,7 +3,6 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
-#include <vector>
 #include <list>
 #include <unordered_set>
 #include <unordered_map>
@@ -16,15 +15,6 @@ using namespace rapidjson;
 
 struct CodeGenerator::Impl
 {
-    std::stringstream ssInclude;
-    std::stringstream ssNormal;
-    std::stringstream ssGlobal;
-
-    std::vector<std::shared_ptr<HeaderFile>> Files;
-
-    std::string CurrentFile;
-
-    Document document;
 
     struct Node {
         std::string Name;
@@ -60,7 +50,7 @@ struct CodeGenerator::Impl
     };
 
     struct CxxNamespace : Node {
-        std::list<std::shared_ptr<LuaFunction>> StaticFunctions;
+        std::list<std::shared_ptr<LuaFunction>> Functions;
         std::list<std::shared_ptr<CxxNamespace>> Namespaces;
         std::list<std::shared_ptr<LuaClass>> Classes;
         std::list<std::shared_ptr<LuaEnum>> Enums;
@@ -73,6 +63,20 @@ struct CodeGenerator::Impl
         std::list<std::shared_ptr<LuaClass>> Classes;
         std::list<std::shared_ptr<LuaEnum>> Enums;
     };
+
+    std::stringstream ssInclude;
+    std::stringstream ssNormal;
+    std::stringstream ssGlobal;
+
+    std::list<std::shared_ptr<HeaderFile>> Files;
+    std::unordered_map<std::string, std::shared_ptr<HeaderFile>> FilesMap;
+    std::unordered_set<std::shared_ptr<HeaderFile>> RegistedFiles;
+
+    std::string CurrentFile;
+
+    Document document;
+
+    
 
     Impl()
     {
@@ -94,13 +98,62 @@ struct CodeGenerator::Impl
         try
         {
             ParseDocument(document);
+            GenerateCode();
         }
         catch (std::string e)
         {
-            std::cerr << "Error: " << e << "Current File :" << CurrentFile << std::endl;
+            std::cerr << " Error: " << e << " Current File :" << CurrentFile << std::endl;
             return false;
         }
+
+
+
         return true;
+    }
+
+    void GenerateCode()
+    {
+        for (auto& file : Files)
+        {
+            GenerateFile(file);
+        }
+    }
+
+    void GenerateFile(const std::shared_ptr<HeaderFile>& File)
+    {
+        if (RegistedFiles.find(File) != RegistedFiles.end())
+        {
+            return;
+        }
+        else 
+        {
+            RegistedFiles.insert(File);
+        }
+
+        for (auto& IncludeFileName : File->IncludeFiles)
+        {
+
+        }
+    }
+
+    bool IsRegisted(const std::string& FileName)
+    {
+        for (auto& file : RegistedFiles)
+        {
+            if (file->Name.find(FileName) != std::string::npos)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool IsInMap(const std::string& FileName, std::shared_ptr<HeaderFile>& FilePtr)
+    {
+        for (auto& itr : FilesMap)
+        {
+            itr.first;
+        }
     }
 
     void ParseDocument(const Document& document)
@@ -108,14 +161,16 @@ struct CodeGenerator::Impl
         for (SizeType i = 0; i < document.Size(); ++i)
         {
             auto& v = document[i];
-            Files.push_back(ParseFile(v));
+            auto& file = ParseFile(v);
+            Files.push_back(file);
+            FilesMap[file->Name] = file;
         }
     }
 
     std::shared_ptr<HeaderFile> ParseFile(const Document::ValueType& FileObject)
     {
         std::shared_ptr<HeaderFile> File = std::make_shared<HeaderFile>();
-        File->Name = FileObject["content"]->GetString();
+        File->Name = FileObject["file"].GetString();
         CurrentFile = File->Name;
         auto& ContentArray = FileObject["content"];
         for (SizeType i = 0; i < ContentArray.Size(); ++i)
@@ -138,15 +193,58 @@ struct CodeGenerator::Impl
             {
                 File->Enums.push_back(ParseEnum(Unit));
             }
+            else if (type == "namespace")
+            {
+                File->Namespaces.push_back(ParseNamespace(Unit));
+            }
         }
         return File;
     }
 
+    void TryGetComment(const Document::ValueType& Object, std::string& Comment) 
+    {
+        auto itr = Object.FindMember("comment");
+        if (itr != Object.MemberEnd())
+        {
+            Comment = itr->value.GetString();
+        }
+    }
 
-    std::shared_ptr<LuaEnum> ParseEnum(const Document::ValueType&& EnumObject)
+    std::shared_ptr<CxxNamespace> ParseNamespace(const Document::ValueType& NamespaceObject)
+    {
+        std::shared_ptr<CxxNamespace> Namespace = std::make_shared<CxxNamespace>();
+        Namespace->Name = NamespaceObject["name"].GetString();
+        auto& NamespaceMembers = NamespaceObject["members"];
+        for (SizeType i = 0; i < NamespaceMembers.Size(); ++i)
+        {
+            auto& Unit = NamespaceMembers[i];
+            std::string type = Unit["type"].GetString();
+            if (type == "class")
+            {
+                Namespace->Classes.push_back(ParseClass(Unit));
+            }
+            else if (type == "function")
+            {
+                Namespace->Functions.push_back(ParseFunction(Unit));
+            }
+            else if (type == "enum")
+            {
+                Namespace->Enums.push_back(ParseEnum(Unit));
+            }
+        }
+        return Namespace;
+    }
+
+    std::shared_ptr<LuaEnum> ParseEnum(const Document::ValueType& EnumObject)
     {
         std::shared_ptr<LuaEnum> Enum = std::make_shared<LuaEnum>();
-        Enum->Name = EnumObject["name"];
+        Enum->Name = EnumObject["name"].GetString();
+        auto& EnumMembers = EnumObject["members"];
+        for (SizeType i = 0; i < EnumMembers.Size(); ++i)
+        {
+            Enum->Keys.push_back(EnumMembers[i]["key"].GetString());
+        }
+        TryGetComment(EnumObject, Enum->Comment);
         return Enum;
     }
 
@@ -168,29 +266,38 @@ struct CodeGenerator::Impl
             {
                 Class->Functions.push_back(ParseFunction(Unit));
             }
+            else if (type == "property")
+            {
+                Class->Properties.push_back(ParseProperty(Unit));
+            }
+            else if (type == "enum")
+            {
+                Class->Enums.push_back(ParseEnum(Unit));
+            }
         }
-
+        TryGetComment(ClassObject, Class->Comment);
         return Class;
     }
 
     std::shared_ptr<LuaFunction> ParseFunction(const Document::ValueType& FunctionObject)
     {
         std::shared_ptr<LuaFunction> Function = std::make_shared<LuaFunction>();
-        Function->Name = FunctionObject["name"];
+        Function->Name = FunctionObject["name"].GetString();
         Function->Type = FunctionType::Common;
         auto itr = FunctionObject.FindMember("access");
-        if (itr != FunctionObject.End())
+        if (itr != FunctionObject.MemberEnd())
         {
-            if (itr->value.GetString() != "public")
+            std::string Access = itr->value.GetString();
+            if (Access != "public")
             {
-                stringstream ss;
-                ss << "Function :" << Function->Name << "must be public, Line: " << FunctionObject["line"]->GetInt();
+                std::stringstream ss;
+                ss << "Function :" << Function->Name << "must be public, Line: " << FunctionObject["line"].GetInt();
                 throw ss.str();
             }
         }
         bool IsStatic = false;
         itr = FunctionObject.FindMember("static");
-        if (itr != FunctionObject.End())
+        if (itr != FunctionObject.MemberEnd())
         {
             IsStatic = itr->value.GetBool();
         }
@@ -198,20 +305,31 @@ struct CodeGenerator::Impl
         if (IsStatic)
         {
             auto& FunctionMeta = FunctionObject["meta"];
-            Function->Type = (FunctionMeta->HasMember("global"))
+            Function->Type = (FunctionMeta.HasMember("global"))
                 ? FunctionType::Global
                 : FunctionType::Static;
         }
+        TryGetComment(FunctionObject, Function->Comment);
         return Function;
+    }
+
+    std::shared_ptr<LuaProperty> ParseProperty(const Document::ValueType& PropertyObject)
+    {
+        std::shared_ptr<LuaProperty> Property = std::make_shared<LuaProperty>();
+        Property->Name = PropertyObject["name"].GetString();
+        Property->Writeable = !PropertyObject["meta"].HasMember("readonly");
+        TryGetComment(PropertyObject, Property->Comment);
+        return Property;
     }
 
     bool GetClassParent(const Document::ValueType& ClassObject, std::string& OutParentClassName)
     {
-        auto &ParentsArray = ClassObject["parents"];
-        if (!ParentsArray.IsArray())
+        auto itr = ClassObject.FindMember("parents");
+        if (itr == ClassObject.MemberEnd())
         {
             return false;
         }
+        auto &ParentsArray = itr->value;
         for (SizeType i = 0; i < ParentsArray.Size(); ++i)
         {
             auto& ParentObject = ParentsArray[i];
