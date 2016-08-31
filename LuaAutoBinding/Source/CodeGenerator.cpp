@@ -15,8 +15,9 @@ using namespace rapidjson;
 struct CodeGenerator::Impl
 {
 
-    struct Node {
+    struct ContentNode {
         std::string Name;
+        virtual ~ContentNode() {};
     };
 
     enum class FunctionType {
@@ -25,34 +26,34 @@ struct CodeGenerator::Impl
         Global
     };
 
-    struct LuaFunction : Node {
+    struct LuaFunction : ContentNode {
         std::string Comment;
         FunctionType Type;
     };
 
-    struct LuaProperty : Node {
+    struct LuaProperty : ContentNode {
         std::string Comment;
         bool Writeable;
     };
 
-    struct LuaEnum : Node {
+    struct LuaEnum : ContentNode {
         std::list<std::string> Keys;
         std::string Comment;
     };
 
-    struct LuaClass : Node {
+    struct LuaClass : ContentNode {
         std::string ParentClass;
-        std::list<std::shared_ptr<Node>> Nodes;
+        std::list<std::shared_ptr<ContentNode>> Nodes;
         std::string Comment;
     };
 
-    struct CxxNamespace : Node {
-        std::list<std::shared_ptr<Node>> Nodes;
+    struct CxxNamespace : ContentNode {
+        std::list<std::shared_ptr<ContentNode>> Nodes;
     };
 
-    struct HeaderFile : Node {
+    struct HeaderFile : ContentNode {
         std::list<std::string> IncludeFiles;
-        std::list<std::shared_ptr<Node>> Nodes;
+        std::list<std::shared_ptr<ContentNode>> Nodes;
     };
 
     std::stringstream ssInclude;
@@ -86,7 +87,7 @@ struct CodeGenerator::Impl
         ifs.close();
         document.Parse(buffer.str().c_str());
 
-        std::shared_ptr<Node> test = std::make_shared<HeaderFile>();
+        std::shared_ptr<ContentNode> test = std::make_shared<HeaderFile>();
 
         try
         {
@@ -130,7 +131,118 @@ struct CodeGenerator::Impl
                 GenerateFile(RegistFirstFile);
             }
         }
+
+        ssInclude << "#include \"" << File->Name << "\"" << std::endl;
+
+        for (auto& Node : File->Nodes)
+        {
+            std::list<std::string> NamespaceStack;
+            if (GenerateNamespace(Node, NamespaceStack) 
+                && GenerateClass(Node, NamespaceStack)
+                && GenerateEnum(Node, NamespaceStack)
+                && GenerateFunction(Node, NamespaceStack)
+                )
+            {
+                std::cerr << "Invalid Node:" << Node->Name << std::endl;
+            }
+        }
+    }
+
+    bool GenerateNamespace(const std::shared_ptr<ContentNode>& Node, std::list<std::string>& NamespaceStack) 
+    {
+        auto NSNode = dynamic_cast<CxxNamespace*>(Node.get());
+        if (NSNode == nullptr)
+        {
+            return true;
+        }
+
+        NamespaceStack.push_back(NSNode->Name);
+
+        for (auto& Node : NSNode->Nodes)
+        {
+            if (GenerateNamespace(Node, NamespaceStack)
+                && GenerateClass(Node, NamespaceStack)
+                && GenerateEnum(Node, NamespaceStack)
+                && GenerateFunction(Node, NamespaceStack)
+                )
+            {
+                std::cerr << "Invalid Node:" << Node->Name << std::endl;
+            }
+        }
+
+        NamespaceStack.pop_back();
+        return false;
+    }
+
+    std::string GetStackedNameSpace(const std::list<std::string>& NamespaceStack)
+    {
+        std::stringstream ss;
+        for (auto& NS: NamespaceStack)
+        {
+            ss << NS << "::";
+        }
+        return ss.str();
+    }
+
+    bool GenerateClass(const std::shared_ptr<ContentNode>& Node, std::list<std::string>& NamespaceStack)
+    {
+        auto ClassNode = dynamic_cast<LuaClass*>(Node.get());
+        if (ClassNode == nullptr)
+        {
+            return true;
+        }
+
+        NamespaceStack.push_back(ClassNode->Name);
         
+        for (auto& Node : ClassNode->Nodes)
+        {
+            if (GenerateProperty(Node, NamespaceStack)
+                && GenerateEnum(Node, NamespaceStack)
+                && GenerateFunction(Node, NamespaceStack)
+                )
+            {
+                std::cerr << "Invalid Node:" << Node->Name << std::endl;
+            }
+        }
+
+        NamespaceStack.pop_back();
+
+        return false;
+    }
+
+    bool GenerateFunction(const std::shared_ptr<ContentNode>& Node, std::list<std::string>& NamespaceStack)
+    {
+        auto FunctionNode = dynamic_cast<LuaFunction*>(Node.get());
+        if (FunctionNode == nullptr)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    bool GenerateEnum(const std::shared_ptr<ContentNode>& Node, std::list<std::string>& NamespaceStack)
+    {
+        auto EnumNode = dynamic_cast<LuaEnum*>(Node.get());
+        if (EnumNode == nullptr)
+        {
+            return true;
+        }
+        
+
+
+        return false;
+    }
+
+    bool GenerateProperty(const std::shared_ptr<ContentNode>& Node, std::list<std::string>& NamespaceStack)
+    {
+        auto PropertyNode = dynamic_cast<LuaProperty*>(Node.get());
+        if (PropertyNode == nullptr)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     bool IsRegisted(const std::string& FileName)
