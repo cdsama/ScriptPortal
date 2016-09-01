@@ -161,6 +161,20 @@
                         "line": 11,
                         "meta": {},
                         "access": "public",
+                        "static": true,
+                        "returnType": {
+                            "type": "literal",
+                            "name": "std::string"
+                        },
+                        "name": "GetPlayerManagerVersion",
+                        "arguments": []
+                    },
+                    {
+                        "type": "function",
+                        "macro": "LUA_FUNCTION",
+                        "line": 14,
+                        "meta": {},
+                        "access": "public",
                         "returnType": {
                             "type": "pointer",
                             "baseType": {
@@ -176,7 +190,7 @@
             {
                 "type": "function",
                 "macro": "LUA_FUNCTION",
-                "line": 19,
+                "line": 22,
                 "meta": {},
                 "returnType": {
                     "type": "literal",
@@ -192,14 +206,14 @@
                     {
                         "type": "function",
                         "macro": "LUA_FUNCTION",
-                        "line": 25,
+                        "line": 28,
                         "comment": "Get current time to string.",
                         "meta": {},
                         "returnType": {
                             "type": "literal",
                             "name": "std::string"
                         },
-                        "name": "GetCurrentTime",
+                        "name": "GetCurrentTimeTest",
                         "arguments": []
                     }
                 ]

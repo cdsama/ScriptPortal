@@ -9,6 +9,9 @@ public:
     static PlayerManager* GetPlayerManager();
 
     LUA_FUNCTION()
+    static std::string GetPlayerManagerVersion();
+
+    LUA_FUNCTION()
     Player* GetPlayer();
 
 private:
@@ -23,5 +26,5 @@ namespace Test
 {
     // Get current time to string.
     LUA_FUNCTION()
-    std::string GetCurrentTime();
+    std::string GetCurrentTimeTest();
 }
