@@ -192,6 +192,15 @@ struct CodeGenerator::Impl
             return true;
         }
 
+        if (ClassNode->ParentClass.empty())
+        {
+            ssNormal << "\t.BeginClass<" << GetStackedNameSpace(NamespaceStack) << ClassNode->Name << ">(\"" << ClassNode->Name << "\")\n";
+        } 
+        else
+        {
+            ssNormal << "\t.DeriveClass<" << GetStackedNameSpace(NamespaceStack) << ClassNode->Name << "," << ClassNode->ParentClass << ">(\"" << ClassNode->Name << "\")\n";
+        }
+
         NamespaceStack.push_back(ClassNode->Name);
         
         for (auto& Node : ClassNode->Nodes)
@@ -206,7 +215,7 @@ struct CodeGenerator::Impl
         }
 
         NamespaceStack.pop_back();
-
+        ssNormal << "\t.EndClass()\n";
         return false;
     }
 
@@ -216,6 +225,26 @@ struct CodeGenerator::Impl
         if (FunctionNode == nullptr)
         {
             return true;
+        }
+        switch (FunctionNode->Type)
+        {
+        case FunctionType::Common:
+        {
+            ssNormal << "\t.AddFunction(\"" << FunctionNode->Name << "\", &" << GetStackedNameSpace(NamespaceStack) << FunctionNode->Name << ")\n";
+            break;
+        }
+        case FunctionType::Static:
+        {
+            ssNormal << "\t.AddStaticFunction(\"" << FunctionNode->Name << "\", &" << GetStackedNameSpace(NamespaceStack) << FunctionNode->Name << ")\n";
+            break;
+        }
+        case FunctionType::Global:
+        {
+            ssGlobal << "\t.AddFunction(\"" << FunctionNode->Name << "\", &" << GetStackedNameSpace(NamespaceStack) << FunctionNode->Name << ")\n";
+            break;
+        }
+        default:
+            break;
         }
 
         return false;
@@ -228,9 +257,13 @@ struct CodeGenerator::Impl
         {
             return true;
         }
-        
-
-
+        auto StackedNameSpace = GetStackedNameSpace(NamespaceStack);
+        ssNormal << "\t.AddEnum<" << StackedNameSpace << ">(\"" << EnumNode->Name << "\")\n";
+        for (auto& EnumKey : EnumNode->Keys)
+        {
+            ssNormal << "\t.AddEnumValue(\"" << EnumKey << ", " << StackedNameSpace << EnumNode->Name << "::" << EnumKey << "\")\n";
+        }
+        ssNormal << "\t.EndEnum()\n";
         return false;
     }
 
@@ -398,16 +431,17 @@ struct CodeGenerator::Impl
         std::shared_ptr<LuaFunction> Function = std::make_shared<LuaFunction>();
         Function->Name = FunctionObject["name"].GetString();
         Function->Type = FunctionType::Common;
+        bool IsMemberFunc = false;
         auto itr = FunctionObject.FindMember("access");
         if (itr != FunctionObject.MemberEnd())
         {
-            std::string Access = itr->value.GetString();
-            if (Access != "public")
+            if (std::string(itr->value.GetString()) != "public")
             {
                 std::stringstream ss;
                 ss << "Function :" << Function->Name << "must be public, Line: " << FunctionObject["line"].GetInt();
                 throw ss.str();
             }
+            IsMemberFunc = true;
         }
         bool IsStatic = false;
         itr = FunctionObject.FindMember("static");
@@ -421,7 +455,9 @@ struct CodeGenerator::Impl
             auto& FunctionMeta = FunctionObject["meta"];
             Function->Type = (FunctionMeta.HasMember("global"))
                 ? FunctionType::Global
-                : FunctionType::Static;
+                : (IsMemberFunc 
+                    ? FunctionType::Static 
+                    : FunctionType::Common);
         }
         TryGetComment(FunctionObject, Function->Comment);
         return Function;
@@ -447,12 +483,12 @@ struct CodeGenerator::Impl
         for (SizeType i = 0; i < ParentsArray.Size(); ++i)
         {
             auto& ParentObject = ParentsArray[i];
-            if (ParentObject["access"].GetString() != "public")
+            if (std::string(ParentObject["access"].GetString()) != "public")
             {
                 continue;
             }
             auto& ParentName = ParentObject["name"];
-            if (ParentName["type"].GetString() != "literal")
+            if (std::string(ParentName["type"].GetString()) != "literal")
             {
                 continue;
             }
@@ -466,9 +502,9 @@ struct CodeGenerator::Impl
     {
         std::stringstream ss;
         ss << ssInclude.str() << std::endl
-            << "void RegistAPIs(luaportal::LuaState& l) \n{\n\tl.module()\n\t"
+            << "void RegistAPIs(luaportal::LuaState& l) \n{\n\tl.module()\n"
             << ssNormal.str()
-            << ssGlobal.str() << std::endl
+            << ssGlobal.str() 
             << "\t;\n}" << std::endl;
         return ss.str();
     }
