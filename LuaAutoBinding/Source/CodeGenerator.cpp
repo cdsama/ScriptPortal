@@ -105,6 +105,7 @@ struct CodeGenerator::Impl
 
     void GenerateCode()
     {
+        ssInclude << "#include <lua.hpp>\n#include <luaportal/LuaPortal.h>\n";
         for (auto& file : Files)
         {
             GenerateFile(file);
@@ -258,10 +259,10 @@ struct CodeGenerator::Impl
             return true;
         }
         auto StackedNameSpace = GetStackedNameSpace(NamespaceStack);
-        ssNormal << "\t.AddEnum<" << StackedNameSpace << ">(\"" << EnumNode->Name << "\")\n";
+        ssNormal << "\t.BeginEnum<" << StackedNameSpace << EnumNode->Name << ">(\"" << EnumNode->Name << "\")\n";
         for (auto& EnumKey : EnumNode->Keys)
         {
-            ssNormal << "\t.AddEnumValue(\"" << EnumKey << ", " << StackedNameSpace << EnumNode->Name << "::" << EnumKey << "\")\n";
+            ssNormal << "\t.AddEnumValue(\"" << EnumKey << "\", " << StackedNameSpace << EnumNode->Name << "::" << EnumKey << ")\n";
         }
         ssNormal << "\t.EndEnum()\n";
         return false;
@@ -274,6 +275,8 @@ struct CodeGenerator::Impl
         {
             return true;
         }
+
+        ssNormal << "\t.AddData(\"" << PropertyNode->Name << "\", &" << GetStackedNameSpace(NamespaceStack) << PropertyNode->Name << (PropertyNode->Writeable ? ", true" : ", false") << ")\n";
 
         return false;
     }

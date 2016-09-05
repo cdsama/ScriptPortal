@@ -1,6 +1,7 @@
 #include "CodeGenerator.h"
 
 #include <iostream>
+#include <fstream>
 
 #include <tclap/CmdLine.h>
 using std::string;
@@ -12,6 +13,7 @@ using std::endl;
 int main(int argc, const char** argv)
 {
     string InputFile;
+    string OutputFile;
     try
     {
         using namespace TCLAP;
@@ -23,6 +25,7 @@ int main(int argc, const char** argv)
 
         cmd.parse(argc, argv);
         InputFile = InputFileArg.getValue();
+        OutputFile = OutputFileArg.getValue();
     }
     catch (TCLAP::ArgException& e)
     {
@@ -34,7 +37,22 @@ int main(int argc, const char** argv)
     CodeGenerator cg;
     if (cg.ParseAST(InputFile))
     {
-        cout << cg.GetResult() << endl;
+        if (OutputFile.empty())
+        {
+            cout << cg.GetResult() << endl;
+        }
+        else
+        {
+            std::ofstream ofs(OutputFile);
+            if (!ofs.is_open())
+            {
+                cerr << "Could not write " << OutputFile << endl;
+                ofs.clear();
+                return -1;
+            }
+            ofs << cg.GetResult();
+            ofs.close();
+        }
     }
     else
     {
