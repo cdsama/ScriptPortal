@@ -1,0 +1,40 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+PROJECT(lua)
+
+INCLUDE_DIRECTORIES(
+source/src
+)
+
+file (GLOB LUA_INCLUDE "*source/src/*.h" "source/src/*.hpp")
+
+AUX_SOURCE_DIRECTORY(source/src SRC_LIST)
+
+list(REMOVE_ITEM SRC_LIST source/src/lua.c source/src/luac.c)
+
+set (CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+
+if (MSVC)
+  set (LIB_PREFIX lib)
+else (MSVC)
+  set (LIB_PREFIX)
+endif (MSVC)
+
+set(LUA_VERSION 5.3.3)
+
+add_library(liblua STATIC ${SRC_LIST})
+set_target_properties(liblua PROPERTIES
+    OUTPUT_NAME ${LIB_PREFIX}lua
+    DEBUG_POSTFIX d)
+
+set(LIBRARY_INSTALL_DESTINATION "${PROJECT_SOURCE_DIR}/${LUA_VERSION}/lib")
+set(INCLUDE_INSTALL_DESTINATION "${PROJECT_SOURCE_DIR}/${LUA_VERSION}/include")
+
+install(
+TARGETS liblua 
+ARCHIVE DESTINATION ${LIBRARY_INSTALL_DESTINATION}
+)
+
+install(
+FILES ${LUA_INCLUDE}
+DESTINATION ${INCLUDE_INSTALL_DESTINATION}
+)
