@@ -660,7 +660,7 @@ private:
          Add or replace a data member.
          */
         template <typename U>
-        Class <T>& addData (char const* name, const U T::* mp, bool isWritable = true)
+        Class <T>& AddData (char const* name, const U T::* mp, bool isWritable = true)
         {
             typedef const U T::*mp_t;
             

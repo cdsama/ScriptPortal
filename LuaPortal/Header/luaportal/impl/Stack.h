@@ -439,7 +439,7 @@ struct Stack <std::string const&>
     }
 };
 
-int pushArgs(lua_State *L)
+static int pushArgs(lua_State *L)
 {
     return 0;
 }
