@@ -1,4 +1,10 @@
+#pragma once
 #include <string>
+#define LUA_ENUM(...) 
+#define LUA_CLASS(...) 
+#define LUA_FUNCTION(...) 
+#define LUA_PROPERTY(...) 
+
 
 // The type enum of an object.
 LUA_ENUM()

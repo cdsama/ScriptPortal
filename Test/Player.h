@@ -1,6 +1,8 @@
+#pragma once
+
 #include "Object.h"
 #include <sstream>
-
+ 
 
 // The class of a player data
 LUA_CLASS()
@@ -8,16 +10,16 @@ class Player : public Object
 {
 public:
     Player(const std::string& _name)
-    : Object(const std::string& _name)
+    : Object(_name)
     {
 
     }
-    
+
     LUA_FUNCTION()
-    std::string GetDiscribe()
+        std::string GetDiscribe()
     {
         std::stringstream ss;
-        ss<< "Name：" << GetName() << "ID: " << ID << "IP: " << IP;
+        ss << "Name: " << GetName() << "ID: " << ID << "IP: " << IP;
         return ss.str();
     }
 
@@ -28,4 +30,4 @@ public:
     LUA_PROPERTY()
     int IP;
 
-};
+}; 

@@ -1,0 +1,28 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.4)
+PROJECT(Test)
+
+INCLUDE_DIRECTORIES(
+    .
+    ../LuaPortal/Header
+)
+
+add_definitions("-DLUA_CLASS\(...\)=' '")
+add_definitions("-DLUA_ENUM\(...\)=' '")
+add_definitions("-DLUA_FUNCTION\(...\)=' '")
+add_definitions("-DLUA_PROPERTY\(...\)=' '")
+
+if (MSVC)
+  set (LIB_PREFIX lib)
+else (MSVC)
+  set (LIB_PREFIX)
+endif (MSVC)
+
+set (lua_version 5.3.3)
+include_directories ("${PROJECT_SOURCE_DIR}/../ThirdParty/lua/${lua_version}/include")
+link_directories ("${PROJECT_SOURCE_DIR}/../ThirdParty/lua/${lua_version}/lib")
+
+aux_source_directory(. SRC_LIST)
+
+add_executable(tst ${SRC_LIST})
+
+target_link_libraries (tst debug ${LIB_PREFIX}luad optimized ${LIB_PREFIX}lua)
