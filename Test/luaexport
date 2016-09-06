@@ -1,0 +1,5 @@
+#pragma once
+#define LUA_ENUM(...)
+#define LUA_CLASS(...)
+#define LUA_FUNCTION(...)
+#define LUA_PROPERTY(...)

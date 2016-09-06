@@ -6,11 +6,6 @@ INCLUDE_DIRECTORIES(
     ../LuaPortal/Header
 )
 
-add_definitions("-DLUA_CLASS\(...\)=' '")
-add_definitions("-DLUA_ENUM\(...\)=' '")
-add_definitions("-DLUA_FUNCTION\(...\)=' '")
-add_definitions("-DLUA_PROPERTY\(...\)=' '")
-
 if (MSVC)
   set (LIB_PREFIX lib)
 else (MSVC)
