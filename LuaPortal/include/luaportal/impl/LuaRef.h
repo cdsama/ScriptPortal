@@ -56,10 +56,18 @@ private:
          * May invoke metamethods.
          */
         void Push() const {
-            lua_rawgeti(m_L, LUA_REGISTRYINDEX, m_tableRef);
-            lua_rawgeti(m_L, LUA_REGISTRYINDEX, m_keyRef);
-            lua_gettable(m_L, -2); // This may trigger the "index" event.
+            lua_rawgeti(m_L, LUA_REGISTRYINDEX, m_tableRef);  
+            if (lua_istable(m_L, -1) || lua_isuserdata(m_L, -1))
+            {
+                lua_rawgeti(m_L, LUA_REGISTRYINDEX, m_keyRef);
+                lua_gettable(m_L, -2); // This may trigger the "index" event.
+            }
+            else 
+            {
+                lua_pushnil(m_L);
+            }
             lua_remove(m_L, -2);
+            
         }
         
     private:

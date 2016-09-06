@@ -86,14 +86,7 @@ int main(int argc, char* argv[])
     std::cout <<add(1,2)<<std::endl; 
     auto vbar = l.GetGlobal("vbar");
     
-    if (!vbar.IsNil())
-    {
-        std::cout << vbar["name"] << vbar["ID"] << std::endl;
-    }
-    else
-    {
-        std::cout << "vbar is nil" << std::endl;
-    }
+    std::cout << vbar["name"] << vbar["ID"] << std::endl;
 
     l.DoString("vbar:Test()", ErrorHandle);
 
