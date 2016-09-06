@@ -739,14 +739,11 @@ private:
             rawsetfield(L, -2, name);
             lua_pop(L, 2);
 
-            rawgetfield(L, -2, "__propget");
-            rawgetfield(L, -4, "__propget");
+            rawgetfield(L, -2, "__propset");
             lua_pushstring(L, name);
             lua_pushcclosure(L, &CFunc::ReadOnlyError, 1);
-            lua_pushvalue(L, -1);
-            rawsetfield(L, -4, name);
             rawsetfield(L, -2, name);
-            lua_pop(L, 2);
+            lua_pop(L, 1);
             
             return *this;
         }
