@@ -76,8 +76,12 @@
                 "file": "string"
             },
             {
+                "type": "include",
+                "file": "luaexport"
+            },
+            {
                 "type": "enum",
-                "line": 10,
+                "line": 7,
                 "comment": "The type enum of an object.",
                 "meta": {},
                 "name": "ObjectType",
@@ -97,14 +101,14 @@
             },
             {
                 "type": "class",
-                "line": 18,
+                "line": 15,
                 "meta": {},
                 "name": "Object",
                 "members": [
                     {
                         "type": "function",
                         "macro": "LUA_FUNCTION",
-                        "line": 32,
+                        "line": 29,
                         "comment": "Get name of an object.",
                         "meta": {},
                         "access": "public",

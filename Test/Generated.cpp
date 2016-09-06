@@ -6,7 +6,7 @@
 
 void RegistAPIs(luaportal::LuaState& l) 
 {
-	l.module()
+	l.GlobalContext()
 	.BeginEnum<ObjectType>("ObjectType")
 	.AddEnumValue("Player", ObjectType::Player)
 	.AddEnumValue("Npc", ObjectType::Npc)

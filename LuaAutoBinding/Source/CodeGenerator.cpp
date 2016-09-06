@@ -505,7 +505,7 @@ struct CodeGenerator::Impl
     {
         std::stringstream ss;
         ss << ssInclude.str() << std::endl
-            << "void RegistAPIs(luaportal::LuaState& l) \n{\n\tl.module()\n"
+            << "void RegistAPIs(luaportal::LuaState& l) \n{\n\tl.GlobalContext()\n"
             << ssNormal.str()
             << ssGlobal.str() 
             << "\t;\n}" << std::endl;
