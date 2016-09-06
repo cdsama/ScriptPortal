@@ -8,14 +8,14 @@ private:
     LuaRef m_key;
     LuaRef m_value;
     
-    void next()
+    void Next()
     {
-        m_table.push();
-        m_key.push();
-        if (lua_next(m_L, -2))
+        m_table.Push();
+        m_key.Push();
+        if(lua_next(m_L, -2))
         {
-            m_value.pop();
-            m_key.pop();
+            m_value.Pop();
+            m_key.Pop();
         }
         else
         {
@@ -27,62 +27,62 @@ private:
     
 public:
     explicit Iterator(LuaRef table)
-    : m_L(table.state())
+    : m_L(table.GetState())
     , m_table(table)
-    , m_key(table.state()) // m_key is nil
-    , m_value(table.state()) // m_value is nil
+    , m_key(table.GetState()) // m_key is nil
+    , m_value(table.GetState()) // m_value is nil
     {
-        if (!table.isNil()) {
-            next(); // get the first (key, value) pair from table
+        if(!table.IsNil()) {
+            Next(); // Get the first(key, value) pair from table
         }
     }
     
-    lua_State* state() const
+    lua_State* GetState() const
     {
         return m_L;
     }
     
-    LuaRef operator* () const
+    LuaRef operator*() const
     {
         return m_value;
     }
     
-    LuaRef operator-> () const
+    LuaRef operator->() const
     {
         return m_value;
     }
     
-    Iterator& operator++ ()
+    Iterator& operator++()
     {
-        if (isNil())
+        if(IsNil())
         {
             // if the iterator reaches the end, do nothing
             return *this;
         }
         else
         {
-            next();
+            Next();
             return *this;
         }
     }
     
-    inline bool isNil() const
+    inline bool IsNil() const
     {
-        return m_key.isNil();
+        return m_key.IsNil();
     }
     
-    inline LuaRef key() const
+    inline LuaRef Key() const
     {
         return m_key;
     }
     
-    inline LuaRef value() const
+    inline LuaRef Value() const
     {
         return m_value;
     }
     
 private:
     // Don't use postfix increment, it is less efficient
-    Iterator operator++ (int);
+    Iterator operator++(int);
 };
 

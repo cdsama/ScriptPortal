@@ -5,25 +5,25 @@
  
  Unspecialized ContainerTraits has the isNotContainer typedef for SFINAE.
  All user defined containers must supply an appropriate specialization for
- ContinerTraits (without the typedef isNotContainer). The containers that
+ ContinerTraits(without the typedef isNotContainer). The containers that
  come with LuaPortal also come with the appropriate ContainerTraits
  specialization. See the corresponding declaration for details.
  
  A specialization of ContainerTraits for some generic type ContainerType
  looks like this:
  
- template <typename T>
- struct ContainerTraits <ContainerType <T> >
+ template<typename T>
+ struct ContainerTraits<ContainerType<T> >
  {
  typedef typename T Type;
  
- static T* get (ContainerType <T> const& c)
+ static T* Get(ContainerType<T> const& c)
  {
- return c.get (); // Implementation-dependent on ContainerType
+ return c.Get(); // Implementation-dependent on ContainerType
  }
  };
  */
-template <typename T>
+template<typename T>
 struct ContainerTraits
 {
     typedef bool isNotContainer;
@@ -42,34 +42,34 @@ struct TypeTraits
      To be considered a container, there must be a specialization of
      ContainerTraits with the required fields.
      */
-    template <typename T>
+    template<typename T>
     class isContainer
     {
     private:
-        typedef char yes[1]; // sizeof (yes) == 1
-        typedef char no [2]; // sizeof (no)  == 2
+        typedef char yes[1]; // sizeof(yes) == 1
+        typedef char no [2]; // sizeof(no)  == 2
         
-        template <typename C>
-        static no& test (typename C::isNotContainer*);
+        template<typename C>
+        static no& test(typename C::isNotContainer*);
         
-        template <typename>
-        static yes& test (...);
+        template<typename>
+        static yes& test(...);
         
     public:
-        static const bool value = sizeof (test <ContainerTraits <T> >(0)) == sizeof (yes);
+        static const bool value = sizeof(test<ContainerTraits<T> >(0)) == sizeof(yes);
     };
     
     /** Determine if T is const qualified.
      */
     /** @{ */
-    template <typename T>
-    struct isConst
+    template<typename T>
+    struct IsConst
     {
         static bool const value = false;
     };
     
-    template <typename T>
-    struct isConst <T const>
+    template<typename T>
+    struct IsConst<T const>
     {
         static bool const value = true;
     };
@@ -78,21 +78,21 @@ struct TypeTraits
     /** Remove the const qualifier from T.
      */
     /** @{ */
-    template <typename T>
-    struct removeConst
+    template<typename T>
+    struct RemoveConst
     {
         typedef T Type;
     };
     
-    template <typename T>
-    struct removeConst <T const>
+    template<typename T>
+    struct RemoveConst<T const>
     {
         typedef T Type;
     };
     /**@}*/
     
-    template <typename T>
-    static T* getPtr(const T& t) {
-        return (T*)&t;
+    template<typename T>
+    static T* GetPtr(const T& t) {
+        return(T*)&t;
     }
 };

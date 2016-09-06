@@ -1,5 +1,5 @@
 #pragma once
-#include <unordered_map>
+#include<unordered_map>
 
 //==============================================================================
 /**
@@ -8,10 +8,10 @@
 struct RefCountedPtrBase
 {
     // Declaration of container for the refcounts
-    typedef std::unordered_map <const void *, int> RefCountsType;
+    typedef std::unordered_map<const void *, int> RefCountsType;
     
 protected:
-    inline RefCountsType& getRefCounts ()
+    inline RefCountsType& getRefCounts()
     {
         static RefCountsType refcounts;
         return refcounts ;
@@ -31,38 +31,38 @@ protected:
  @tparam T The class type.
  
  @todo Decompose RefCountedPtr using a policy. At a minimum, the underlying
- reference count should be policy based (to support atomic operations)
- and the delete behavior should be policy based (to support custom
+ reference count should be policy based(to support atomic operations)
+ and the delete behavior should be policy based(to support custom
  disposal methods).
  
  @todo Provide an intrusive version of RefCountedPtr.
  */
-template <typename T>
+template<typename T>
 class RefCountedPtr : private RefCountedPtrBase
 {
 public:
-    template <typename Other>
+    template<typename Other>
     struct rebind
     {
-        typedef RefCountedPtr <Other> other;
+        typedef RefCountedPtr<Other> other;
     };
     
     /** Construct as nullptr or from existing pointer to T.
      
      @param p The optional, existing pointer to assign from.
      */
-    RefCountedPtr (T* p = 0) : m_p (p)
+    RefCountedPtr(T* p = 0) : m_p(p)
     {
-        ++getRefCounts () [m_p];
+        ++getRefCounts() [m_p];
     }
     
     /** Construct from another RefCountedPtr.
      
      @param rhs The RefCountedPtr to assign from.
      */
-    RefCountedPtr (RefCountedPtr <T> const& rhs) : m_p (rhs.get())
+    RefCountedPtr(RefCountedPtr<T> const& rhs) : m_p(rhs.Get())
     {
-        ++getRefCounts () [m_p];
+        ++getRefCounts() [m_p];
     }
     
     /** Construct from a RefCountedPtr of a different type.
@@ -72,17 +72,17 @@ public:
      @param  rhs The RefCountedPtr to assign from.
      @tparam U   The other object type.
      */
-    template <typename U>
-    RefCountedPtr (RefCountedPtr <U> const& rhs) : m_p (static_cast <T*> (rhs.get()))
+    template<typename U>
+    RefCountedPtr(RefCountedPtr<U> const& rhs) : m_p(static_cast<T*>(rhs.Get()))
     {
-        ++getRefCounts () [m_p];
+        ++getRefCounts() [m_p];
     }
     
     /** Release the object.
      
      If there are no more references then the object is deleted.
      */
-    ~RefCountedPtr ()
+    ~RefCountedPtr()
     {
         reset();
     }
@@ -92,13 +92,13 @@ public:
      @param  rhs The RefCountedPtr to assign from.
      @return     A reference to the RefCountedPtr.
      */
-    RefCountedPtr <T>& operator= (RefCountedPtr <T> const& rhs)
+    RefCountedPtr<T>& operator=(RefCountedPtr<T> const& rhs)
     {
-        if (m_p != rhs.m_p)
+        if(m_p != rhs.m_p)
         {
-            reset ();
+            reset();
             m_p = rhs.m_p;
-            ++getRefCounts () [m_p];
+            ++getRefCounts() [m_p];
         }
         return *this;
     }
@@ -111,12 +111,12 @@ public:
      @param  rhs The other RefCountedPtr to assign from.
      @return     A reference to the RefCountedPtr.
      */
-    template <typename U>
-    RefCountedPtr <T>& operator= (RefCountedPtr <U> const& rhs)
+    template<typename U>
+    RefCountedPtr<T>& operator=(RefCountedPtr<U> const& rhs)
     {
-        reset ();
-        m_p = static_cast <T*> (rhs.get());
-        ++getRefCounts () [m_p];
+        reset();
+        m_p = static_cast<T*>(rhs.Get());
+        ++getRefCounts() [m_p];
         return *this;
     }
     
@@ -124,7 +124,7 @@ public:
      
      @return A pointer to the object.
      */
-    T* get () const
+    T* Get() const
     {
         return m_p;
     }
@@ -133,7 +133,7 @@ public:
      
      @return A pointer to the object.
      */
-    T* operator* () const
+    T* operator*() const
     {
         return m_p;
     }
@@ -142,7 +142,7 @@ public:
      
      @return A pointer to the object.
      */
-    T* operator-> () const
+    T* operator->() const
     {
         return m_p;
     }
@@ -153,9 +153,9 @@ public:
      
      @return The number of active references.
      */
-    long use_count () const
+    long use_count() const
     {
-        return getRefCounts () [m_p];
+        return getRefCounts() [m_p];
     }
     
     /** Release the pointer.
@@ -163,11 +163,11 @@ public:
      The reference count is decremented. If the reference count reaches
      zero, the object is deleted.
      */
-    void reset ()
+    void reset()
     {
-        if (m_p != 0)
+        if(m_p != 0)
         {
-            if (--getRefCounts () [m_p] <= 0)
+            if(--getRefCounts() [m_p]<= 0)
                 delete m_p;
             
             m_p = 0;
@@ -184,17 +184,17 @@ namespace luaportal
 {
     
     // forward declaration
-    template <typename T>
+    template<typename T>
     struct ContainerTraits;
     
-    template <typename T>
-    struct ContainerTraits <RefCountedPtr <T> >
+    template<typename T>
+    struct ContainerTraits<RefCountedPtr<T> >
     {
         typedef T Type;
         
-        static T* get (RefCountedPtr <T> const& c)
+        static T* Get(RefCountedPtr<T> const& c)
         {
-            return c.get ();
+            return c.Get();
         }
     };
     

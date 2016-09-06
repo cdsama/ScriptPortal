@@ -3,20 +3,20 @@
 // All #include dependencies are listed here
 // instead of in the individual header files.
 //
-#include <cassert>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-#include <typeinfo>
-#include <functional>
-#include <memory>
-#include <type_traits>
+#include<cassert>
+#include<sstream>
+#include<stdexcept>
+#include<string>
+#include<typeinfo>
+#include<functional>
+#include<memory>
+#include<type_traits>
 
 namespace luaportal
 {
     
     // Forward declaration
-    template <typename T>
+    template<typename T>
     struct Stack;
     
 #include "impl/LuaHelpers.h"
@@ -40,12 +40,12 @@ namespace luaportal
     class Security
     {
     public:
-        static bool hideMetatables ()
+        static bool hideMetatables()
         {
             return getSettings().hideMetatables;
         }
         
-        static void setHideMetatables (bool shouldHide)
+        static void setHideMetatables(bool shouldHide)
         {
             getSettings().hideMetatables = shouldHide;
         }
@@ -53,14 +53,14 @@ namespace luaportal
     private:
         struct Settings
         {
-            Settings () : hideMetatables (true)
+            Settings() : hideMetatables(true)
             {
             }
             
             bool hideMetatables;
         };
         
-        static Settings& getSettings ()
+        static Settings& getSettings()
         {
             static Settings settings;
             return settings;
@@ -73,11 +73,11 @@ namespace luaportal
     
     //------------------------------------------------------------------------------
     /**
-     Change whether or not metatables are hidden (on by default).
+     Change whether or not metatables are hidden(on by default).
      */
-    inline void setHideMetatables (bool shouldHide)
+    inline void setHideMetatables(bool shouldHide)
     {
-        Security::setHideMetatables (shouldHide);
+        Security::setHideMetatables(shouldHide);
     }
     
 }

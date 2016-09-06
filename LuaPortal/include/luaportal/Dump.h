@@ -1,27 +1,27 @@
-﻿#include <sstream>
-#include <string>
-#include <iostream>
+﻿#include<sstream>
+#include<string>
+#include<iostream>
 
 std::string dumpLuaState(lua_State *L) {
     std::stringstream ostr;
     int i;
     int top = lua_gettop(L);
-    ostr << "top=" << top << ":\n";
-    for (i = 1; i <= top; ++i) {
+    ostr<< "top="<< top<< ":\n";
+    for(i = 1; i<= top; ++i) {
         int t = lua_type(L, i);
         switch(t) {
             case LUA_TSTRING:
-                ostr << "  " << i << ": '" << lua_tostring(L, i) << "'\n";
+                ostr<< "  "<< i<< ": '"<< lua_tostring(L, i)<< "'\n";
                 break;
             case LUA_TBOOLEAN:
-                ostr << "  " << i << ": " << 
-                (lua_toboolean(L, i) ? "true" : "false") << "\n";
+                ostr<< "  "<< i<< ": "<< 
+               (lua_toboolean(L, i) ? "true" : "false")<< "\n";
                 break;
             case LUA_TNUMBER:
-                ostr << "  " << i << ": " << lua_tonumber(L, i) << "\n";
+                ostr<< "  "<< i<< ": "<< lua_tonumber(L, i)<< "\n";
                 break;
             default:
-                ostr << "  " << i << ": TYPE=" << lua_typename(L, t) << "\n";
+                ostr<< "  "<< i<< ": TYPE="<< lua_typename(L, t)<< "\n";
                 break;
         }
     }
@@ -32,17 +32,17 @@ void traverseTable(lua_State *L, int index)
 {
     index = lua_absindex(L, index);
     
-    if (!lua_istable(L, index)) {
+    if(!lua_istable(L, index)) {
         return;
     }
     printf("{");
     lua_pushnil(L); 
-    while (lua_next(L, index))
+    while(lua_next(L, index))
     {
         lua_pushvalue(L, -2);
         const char* key = lua_tostring(L, -1);
         const char* value = lua_tostring(L, -2);
-        if (lua_type(L, -2) == LUA_TTABLE) {
+        if(lua_type(L, -2) == LUA_TTABLE) {
             printf("%s : %s ,", key, "table");
         }else if(lua_type(L, -2) == LUA_TSTRING){
             printf("%s : %s ,", key, value);
@@ -57,7 +57,7 @@ void traverseTable(lua_State *L, int index)
 void printLine(lua_State *L, int idx)
 {
     std::cout<<idx;
-    switch (lua_type(L, idx)) {
+    switch(lua_type(L, idx)) {
             
         case LUA_TBOOLEAN:
             std::cout<<":boolean: "<<"\t"<<(lua_toboolean(L, idx) ? "true": "faLe");	
@@ -85,7 +85,7 @@ void printStack(lua_State *L)
 {
     int count = lua_gettop(L);
     std::cout<<"stack element count: "<<count<<std::endl;
-    if (count != 0) {
+    if(count != 0) {
         std::cout<<"------------------------"<<std::endl;
     }
     for(int i = count ; i > 0; --i){

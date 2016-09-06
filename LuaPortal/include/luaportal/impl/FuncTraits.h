@@ -1,11 +1,11 @@
 /**
  Since the throw specification is part of a function signature, the FuncTraits
  family of templates needs to be specialized for both types. The
- LUAPORTAL_THROWSPEC macro controls whether we use the 'throw ()' form, or
- 'noexcept' (if C++11 is available) to distinguish the functions.
+ LUAPORTAL_THROWSPEC macro controls whether we use the 'throw()' form, or
+ 'noexcept'(if C++11 is available) to distinguish the functions.
  */
-#if defined (__APPLE_CPP__) || defined(__APPLE_CC__) || defined(__clang__) || defined(__GNUC__) || \
-(defined (_MSC_VER) && (_MSC_VER >= 1700))
+#if defined(__APPLE_CPP__) || defined(__APPLE_CC__) || defined(__clang__) || defined(__GNUC__) || \
+(defined(_MSC_VER) &&(_MSC_VER >= 1700))
 // Do not define LUAPORTAL_THROWSPEC since the Xcode and gcc  compilers do not
 // distinguish the throw specification in the function signature.
 #else
@@ -26,173 +26,173 @@
  Expansions are provided for functions with up to 8 parameters. This can be
  manually extended, or expanded to an arbitrary amount using C++11 features.
  */
-template <typename MemFn, typename D = MemFn>
+template<typename MemFn, typename D = MemFn>
 struct FuncTraits
 {
 };
 
 /* Ordinary function pointers. */
 
-template <typename R, typename D, typename... P>
+template<typename R, typename D, typename... P>
 struct RecursiveCallStaticFunction;
 
-template <typename R, typename D, typename... P>
+template<typename R, typename D, typename... P>
 struct RecursiveCallStaticFunction
 {
     template<typename... U>
-    static R call (D fp, lua_State *L, U... u)
+    static R Call(D fp, lua_State *L, U... u)
     {
         return fp(u...);
     }
 };
 
-template <typename R, typename D, typename H, typename... P>
+template<typename R, typename D, typename H, typename... P>
 struct RecursiveCallStaticFunction<R,D,H,P...>
 {
     template<typename... U>
-    static R call (D fp, lua_State *L, U... u)
+    static R Call(D fp, lua_State *L, U... u)
     {
         const int index = static_cast<int>(1 + sizeof...(u));
-        H h = Stack<H>::get (L, index);
-        return RecursiveCallStaticFunction<R,D,P...>::call(fp, L, u..., h);
+        H h = Stack<H>::Get(L, index);
+        return RecursiveCallStaticFunction<R,D,P...>::Call(fp, L, u..., h);
     }
 };
 
-template <typename R, typename D, typename... Param>
-struct FuncTraits <R (*) (Param...), D>
+template<typename R, typename D, typename... Param>
+struct FuncTraits<R(*)(Param...), D>
 {
     static bool const isMemberFunction = false;
     typedef D DeclType;
     typedef R ReturnType;
     
-    static R call (D fp, lua_State *L)
+    static R Call(D fp, lua_State *L)
     {
-        return RecursiveCallStaticFunction<R, D, Param...>::call(fp, L);
+        return RecursiveCallStaticFunction<R, D, Param...>::Call(fp, L);
     }
 };
 
 
 /* Non-const member function pointers. */
 
-template <typename T, typename R, typename D, typename... P>
+template<typename T, typename R, typename D, typename... P>
 struct RecursiveCallMemberFunction;
 
-template <typename T, typename R, typename D, typename... P>
+template<typename T, typename R, typename D, typename... P>
 struct RecursiveCallMemberFunction
 {
     template<typename... U>
-    static R call (T* obj, D fp, lua_State *L, U... u)
+    static R Call(T* obj, D fp, lua_State *L, U... u)
     {
-        return (obj->*fp)(u...);
+        return(obj->*fp)(u...);
     }
     
     template<typename... U>
-    static R callConst (const T* obj, D fp, lua_State *L, U... u)
+    static R CallConst(const T* obj, D fp, lua_State *L, U... u)
     {
-        return (obj->*fp)(u...);
+        return(obj->*fp)(u...);
     }
 };
 
-template <typename T, typename R, typename D, typename H, typename... P>
+template<typename T, typename R, typename D, typename H, typename... P>
 struct RecursiveCallMemberFunction<T,R,D,H,P...>
 {
     template<typename... U>
-    static R call (T* obj, D fp, lua_State *L, U... u)
+    static R Call(T* obj, D fp, lua_State *L, U... u)
     {
         const int index = static_cast<int>(2 + sizeof...(u));
-        H h = Stack<H>::get (L, index);
-        return RecursiveCallMemberFunction<T,R,D,P...>::call(obj, fp, L, u..., h);
+        H h = Stack<H>::Get(L, index);
+        return RecursiveCallMemberFunction<T,R,D,P...>::Call(obj, fp, L, u..., h);
     }
     
     template<typename... U>
-    static R callConst (const T* obj, D fp, lua_State *L, U... u)
+    static R CallConst(const T* obj, D fp, lua_State *L, U... u)
     {
         const int index = static_cast<int>(2 + sizeof...(u));
-        H h = Stack<H>::get (L, index);
-        return RecursiveCallMemberFunction<T,R,D,P...>::callConst(obj, fp, L, u..., h);
+        H h = Stack<H>::Get(L, index);
+        return RecursiveCallMemberFunction<T,R,D,P...>::CallConst(obj, fp, L, u..., h);
     }
 };
 
-template <typename T, typename R, typename D, typename... Param>
-struct FuncTraits <R (T::*) (Param...), D>
+template<typename T, typename R, typename D, typename... Param>
+struct FuncTraits<R(T::*)(Param...), D>
 {
     static bool const isMemberFunction = true;
-    static bool const isConstMemberFunction = false;
+    static bool const IsConstMemberFunction = false;
     typedef D DeclType;
     typedef T ClassType;
     typedef R ReturnType;
     
-    static R call (T* obj, D fp, lua_State *L)
+    static R Call(T* obj, D fp, lua_State *L)
     {
-        return RecursiveCallMemberFunction<T, R, D, Param...>::call(obj, fp, L);
+        return RecursiveCallMemberFunction<T, R, D, Param...>::Call(obj, fp, L);
     }
 };
 
 /* Const member function pointers. */
 
-template <typename T, typename R, typename D, typename... Param>
-struct FuncTraits <R (T::*) (Param...) const, D>
+template<typename T, typename R, typename D, typename... Param>
+struct FuncTraits<R(T::*)(Param...) const, D>
 {
     static bool const isMemberFunction = true;
-    static bool const isConstMemberFunction = true;
+    static bool const IsConstMemberFunction = true;
     typedef D DeclType;
     typedef T ClassType;
     typedef R ReturnType;
     
-    static R call (const T* obj, D fp, lua_State *L)
+    static R Call(const T* obj, D fp, lua_State *L)
     {
-        return RecursiveCallMemberFunction<T, R, D, Param...>::callConst(obj, fp, L);
+        return RecursiveCallMemberFunction<T, R, D, Param...>::CallConst(obj, fp, L);
     }
 };
 
-#if defined (LUAPORTAL_THROWSPEC)
+#if defined(LUAPORTAL_THROWSPEC)
 
 /* Ordinary function pointers. */
 
-template <typename R, typename D, typename... Param>
-struct FuncTraits <R (*) (Param...) LUAPORTAL_THROWSPEC, D>
+template<typename R, typename D, typename... Param>
+struct FuncTraits<R(*)(Param...) LUAPORTAL_THROWSPEC, D>
 {
     static bool const isMemberFunction = false;
     typedef D DeclType;
     typedef R ReturnType;
     
-    static R call (D fp, lua_State *L)
+    static R Call(D fp, lua_State *L)
     {
-        return RecursiveCallStaticFunction<R, D, Param...>::call(fp, L);
+        return RecursiveCallStaticFunction<R, D, Param...>::Call(fp, L);
     }
 };
 
 /* Non-const member function pointers with THROWSPEC. */
 
-template <typename T, typename R, typename D, typename... Param>
-struct FuncTraits <R (T::*) (Param...) LUAPORTAL_THROWSPEC, D>
+template<typename T, typename R, typename D, typename... Param>
+struct FuncTraits<R(T::*)(Param...) LUAPORTAL_THROWSPEC, D>
 {
     static bool const isMemberFunction = true;
-    static bool const isConstMemberFunction = false;
+    static bool const IsConstMemberFunction = false;
     typedef D DeclType;
     typedef T ClassType;
     typedef R ReturnType;
     
-    static R call (T* obj, D fp, lua_State *L)
+    static R Call(T* obj, D fp, lua_State *L)
     {
-        return RecursiveCallMemberFunction<T, R, D, Param...>::call(obj, fp, L);
+        return RecursiveCallMemberFunction<T, R, D, Param...>::Call(obj, fp, L);
     }
 };
 
 /* Const member function pointers with THROWSPEC. */
 
-template <typename T, typename R, typename D, typename... Param>
-struct FuncTraits <R (T::*) (Param...) const LUAPORTAL_THROWSPEC, D>
+template<typename T, typename R, typename D, typename... Param>
+struct FuncTraits<R(T::*)(Param...) const LUAPORTAL_THROWSPEC, D>
 {
     static bool const isMemberFunction = true;
-    static bool const isConstMemberFunction = true;
+    static bool const IsConstMemberFunction = true;
     typedef D DeclType;
     typedef T ClassType;
     typedef R ReturnType;
     
-    static R call (const T* obj, D fp, lua_State *L)
+    static R Call(const T* obj, D fp, lua_State *L)
     {
-        return RecursiveCallMemberFunction<T, R, D, Param...>::callConst(obj, fp, L);
+        return RecursiveCallMemberFunction<T, R, D, Param...>::CallConst(obj, fp, L);
     }
 };
 
