@@ -1,0 +1,30 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.4)
+PROJECT(LuaPortalTest)
+
+INCLUDE_DIRECTORIES(
+    .
+    ../include
+)
+
+if (MSVC)
+  set (LIB_PREFIX lib)
+else (MSVC)
+  set (LIB_PREFIX)
+endif (MSVC)
+
+set (lua_version 5.3.3)
+include_directories ("${PROJECT_SOURCE_DIR}/../../ThirdParty/lua/${lua_version}/include")
+link_directories ("${PROJECT_SOURCE_DIR}/../../ThirdParty/lua/${lua_version}/lib")
+
+aux_source_directory(. SRC_LIST)
+
+add_executable(lptest ${SRC_LIST})
+
+target_link_libraries (lptest debug ${LIB_PREFIX}luad optimized ${LIB_PREFIX}lua)
+
+set(INSTALL_DESTINATION "${PROJECT_SOURCE_DIR}")
+
+install(
+TARGETS lptest
+RUNTIME DESTINATION ${INSTALL_DESTINATION}
+)
