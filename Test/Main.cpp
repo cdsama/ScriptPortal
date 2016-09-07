@@ -10,7 +10,7 @@ int main(int argc, char* argv[])
     LuaState l;
     RegistAPIs(l);
 
-    l.doString("print(PlayerManager.GetPlayerManagerVersion())", [](const std::string& err) {
+    l.DoString("print(PlayerManager.GetPlayerManagerVersion())", [](const std::string& err) {
         std::cerr << err << std::endl;
     });
 

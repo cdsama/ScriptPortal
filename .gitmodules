@@ -7,3 +7,6 @@
 [submodule "ThirdParty/lua/source"]
 	path = ThirdParty/lua/source
 	url = https://github.com/lua/lua.git
+[submodule "ThirdParty/LuaPortal"]
+	path = ThirdParty/LuaPortal
+	url = https://github.com/cdsama/LuaPortal.git
