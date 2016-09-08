@@ -1,5 +1,5 @@
 #include <lua.hpp>
-#include <luaportal/LuaPortal.h>
+#include <luaportal/luaportal.h>
 #include "Object.h"
 #include "Player.h"
 #include "PlayerManager.h"

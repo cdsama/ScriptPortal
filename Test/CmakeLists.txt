@@ -3,7 +3,7 @@ PROJECT(Test)
 
 INCLUDE_DIRECTORIES(
     .
-    ../ThirdParty/LuaPortal/include
+    ../ThirdParty/luaportal/include
 )
 
 if (MSVC)

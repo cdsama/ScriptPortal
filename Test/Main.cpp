@@ -1,6 +1,6 @@
 #include <iostream>
 #include <lua.hpp>
-#include <luaportal/LuaPortal.h>
+#include <luaportal/luaportal.h>
 using namespace luaportal;
 
 void RegistAPIs(luaportal::LuaState& l);

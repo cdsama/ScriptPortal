@@ -105,7 +105,7 @@ struct CodeGenerator::Impl
 
     void GenerateCode()
     {
-        ssInclude << "#include <lua.hpp>\n#include <luaportal/LuaPortal.h>\n";
+        ssInclude << "#include <lua.hpp>\n#include <luaportal/luaportal.h>\n";
         for (auto& file : Files)
         {
             GenerateFile(file);
