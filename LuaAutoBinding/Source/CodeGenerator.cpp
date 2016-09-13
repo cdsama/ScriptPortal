@@ -112,6 +112,50 @@ struct CodeGenerator::Impl
         }
     }
 
+    bool IsEmptyNode(const std::shared_ptr<ContentNode>& Node)
+    {
+        if (Node == nullptr)
+        {
+            return true;
+        }
+        auto NSNode = dynamic_cast<CxxNamespace*>(Node.get());
+        if (NSNode == nullptr)
+        {
+            return false;
+        }
+        else 
+        {
+            for (auto& SubNode : NSNode->Nodes)
+            {
+                if (!IsEmptyNode(SubNode))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    bool isEmptyFile(const std::shared_ptr<HeaderFile>& File)
+    {
+        if (File == nullptr)
+        {
+            return true;
+        }
+        if (File->Nodes.empty())
+        {
+            return true;
+        }
+        for (auto& Node : File->Nodes)
+        {
+            if (!IsEmptyNode(Node))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
     void GenerateFile(const std::shared_ptr<HeaderFile>& File)
     {
         if (RegistedFiles.find(File) != RegistedFiles.end())
@@ -131,6 +175,11 @@ struct CodeGenerator::Impl
             {
                 GenerateFile(RegistFirstFile);
             }
+        }
+
+        if (isEmptyFile(File))
+        {
+            return;
         }
 
         ssInclude << "#include \"" << File->Name << "\"" << std::endl;
