@@ -5,6 +5,7 @@
 
 #include <tclap/CmdLine.h>
 using std::string;
+using std::vector;
 
 using std::cout;
 using std::cerr;
@@ -14,6 +15,7 @@ int main(int argc, const char** argv)
 {
     string InputFile;
     string OutputFile;
+    vector<string> PreIncludeList;
     try
     {
         using namespace TCLAP;
@@ -21,11 +23,13 @@ int main(int argc, const char** argv)
         CmdLine cmd("Header Parser");
 
         ValueArg<string> OutputFileArg("o", "output", "Output file path for writing generated code.", false, "", "", cmd);
+        MultiArg<string> PreIncludeListArg("p", "preinclude", "Add pre include contents", false, "", cmd);
         UnlabeledValueArg<string> InputFileArg("InputFile", "Input json ast file", true, "", "", cmd);
 
         cmd.parse(argc, argv);
         InputFile = InputFileArg.getValue();
         OutputFile = OutputFileArg.getValue();
+        PreIncludeList = PreIncludeListArg.getValue();
     }
     catch (TCLAP::ArgException& e)
     {
@@ -50,6 +54,11 @@ int main(int argc, const char** argv)
                 ofs.clear();
                 return -1;
             }
+            for (auto& Include : PreIncludeList)
+            {
+                ofs << Include << endl;
+            }
+
             ofs << cg.GetResult();
             ofs.close();
         }

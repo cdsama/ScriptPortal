@@ -4,9 +4,9 @@
 #include "Player.h"
 #include "PlayerManager.h"
 
-void RegistAPIs(luaportal::LuaState& l) 
+void RegistAPIs(luaportal::LuaState& LOL) 
 {
-	l.GlobalContext()
+	LOL.GlobalContext()
 	.BeginEnum<ObjectType>("ObjectType")
 	.AddEnumValue("Player", ObjectType::Player)
 	.AddEnumValue("Npc", ObjectType::Npc)
