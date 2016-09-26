@@ -34,6 +34,7 @@ struct CodeGenerator::Impl
     struct LuaProperty : ContentNode {
         std::string Comment;
         bool Writeable;
+        bool IsStatic;
     };
 
     struct LuaEnum : ContentNode {
@@ -325,7 +326,7 @@ struct CodeGenerator::Impl
             return true;
         }
 
-        ssNormal << "\t.AddData(\"" << PropertyNode->Name << "\", &" << GetStackedNameSpace(NamespaceStack) << PropertyNode->Name << (PropertyNode->Writeable ? ", true" : ", false") << ")\n";
+        ssNormal << (PropertyNode->IsStatic ? "\t.AddStaticData(\"" : "\t.AddData(\"") << PropertyNode->Name << "\", &" << GetStackedNameSpace(NamespaceStack) << PropertyNode->Name << (PropertyNode->Writeable ? ", true" : ", false") << ")\n";
 
         return false;
     }
@@ -520,6 +521,7 @@ struct CodeGenerator::Impl
         std::shared_ptr<LuaProperty> Property = std::make_shared<LuaProperty>();
         Property->Name = PropertyObject["name"].GetString();
         Property->Writeable = !PropertyObject["meta"].HasMember("readonly");
+        Property->IsStatic = PropertyObject["dataType"].HasMember("static");
         TryGetComment(PropertyObject, Property->Comment);
         return Property;
     }
