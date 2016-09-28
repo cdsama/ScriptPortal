@@ -648,6 +648,11 @@ namespace hp {
         Writer.String("name");
         Writer.String(classNameToken.token.c_str());
 
+        if (MatchIdentifier("final"))
+        {
+
+        }
+
         // Match base types
         if (MatchSymbol(":"))
         {
