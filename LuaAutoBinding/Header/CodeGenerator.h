@@ -14,6 +14,8 @@ public:
 
     std::string GetResult();
 
+    std::string AutoNullMacro;
+
 private:
     struct Impl;
     std::shared_ptr<Impl> impl;

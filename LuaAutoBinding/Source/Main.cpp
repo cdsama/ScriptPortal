@@ -16,6 +16,7 @@ int main(int argc, const char** argv)
     string InputFile;
     string OutputFile;
     vector<string> PreIncludeList;
+    string AutoNullMacro;
     try
     {
         using namespace TCLAP;
@@ -23,13 +24,16 @@ int main(int argc, const char** argv)
         CmdLine cmd("Header Parser");
 
         ValueArg<string> OutputFileArg("o", "output", "Output file path for writing generated code.", false, "", "", cmd);
-        MultiArg<string> PreIncludeListArg("p", "preinclude", "Add pre include contents", false, "", cmd);
-        UnlabeledValueArg<string> InputFileArg("InputFile", "Input json ast file", true, "", "", cmd);
+        MultiArg<string> PreIncludeListArg("p", "preinclude", "Add pre include contents.", false, "", cmd);
+        ValueArg<string> AutoNullMacroArg("a", "autonullmacro", "Generate set data nullptr code.", false, "", "", cmd);
+        UnlabeledValueArg<string> InputFileArg("InputFile", "Input json ast file.", true, "", "", cmd);
+        
 
         cmd.parse(argc, argv);
         InputFile = InputFileArg.getValue();
         OutputFile = OutputFileArg.getValue();
         PreIncludeList = PreIncludeListArg.getValue();
+        AutoNullMacro = AutoNullMacroArg.getValue();
     }
     catch (TCLAP::ArgException& e)
     {
@@ -39,6 +43,7 @@ int main(int argc, const char** argv)
 
 
     CodeGenerator cg;
+    cg.AutoNullMacro = AutoNullMacro;
     if (cg.ParseAST(InputFile))
     {
         if (OutputFile.empty())

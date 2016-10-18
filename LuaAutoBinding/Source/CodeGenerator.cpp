@@ -4,7 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <list>
-#include <unordered_set>
+#include <set>
 #include <memory> 
 
 #include <rapidjson/rapidjson.h>
@@ -35,6 +35,7 @@ struct CodeGenerator::Impl
         std::string Comment;
         bool Writeable;
         bool IsStatic;
+        bool IsAutoNull;
     };
 
     struct LuaEnum : ContentNode {
@@ -60,12 +61,14 @@ struct CodeGenerator::Impl
     std::stringstream ssInclude;
     std::stringstream ssNormal;
     std::stringstream ssGlobal;
+    std::stringstream ssAutoNull;
 
     std::list<std::shared_ptr<HeaderFile>> Files;
-    std::unordered_set<std::shared_ptr<HeaderFile>> UnregistedFiles;
-    std::unordered_set<std::shared_ptr<HeaderFile>> RegistedFiles;
+    std::set<std::shared_ptr<HeaderFile>> UnregistedFiles;
+    std::set<std::shared_ptr<HeaderFile>> RegistedFiles;
 
     std::string CurrentFile;
+    std::string AutoNullMacro;
 
     Document document;
 
@@ -76,8 +79,9 @@ struct CodeGenerator::Impl
 
     }
 
-    bool ParseAST(const std::string& InputFile)
+    bool ParseAST(const std::string& InputFile, const std::string& AutoNullMacro_)
     {
+        AutoNullMacro = AutoNullMacro_;
         std::ifstream ifs(InputFile);
         if (!ifs.is_open()) {
             std::cerr << "Could not open " << InputFile << std::endl;
@@ -325,8 +329,12 @@ struct CodeGenerator::Impl
         {
             return true;
         }
-
-        ssNormal << (PropertyNode->IsStatic ? "\t.AddStaticData(\"" : "\t.AddData(\"") << PropertyNode->Name << "\", &" << GetStackedNameSpace(NamespaceStack) << PropertyNode->Name << (PropertyNode->Writeable ? ", true" : ", false") << ")\n";
+        auto StackedNameSpace = GetStackedNameSpace(NamespaceStack);
+        ssNormal << (PropertyNode->IsStatic ? "\t.AddStaticData(\"" : "\t.AddData(\"") << PropertyNode->Name << "\", &" << StackedNameSpace << PropertyNode->Name << (PropertyNode->Writeable ? ", true" : ", false") << ")\n";
+        if (PropertyNode->IsStatic && PropertyNode->IsAutoNull)
+        {
+            ssAutoNull << "\t" << StackedNameSpace << PropertyNode->Name << " = nullptr;\n";
+        }
 
         return false;
     }
@@ -522,6 +530,7 @@ struct CodeGenerator::Impl
         Property->Name = PropertyObject["name"].GetString();
         Property->Writeable = !PropertyObject["meta"].HasMember("readonly");
         Property->IsStatic = PropertyObject["dataType"].HasMember("static");
+        Property->IsAutoNull = (PropertyObject["macro"].GetString() == AutoNullMacro);
         TryGetComment(PropertyObject, Property->Comment);
         return Property;
     }
@@ -556,10 +565,13 @@ struct CodeGenerator::Impl
     {
         std::stringstream ss;
         ss << ssInclude.str() << std::endl
-            << "void RegistAPIs(luaportal::LuaState& LOL) \n{\n\tLOL.GlobalContext()\n"
+            << "void RegisterAPIs(luaportal::LuaState& LOL) \n{\n\tLOL.GlobalContext()\n"
             << ssNormal.str()
             << ssGlobal.str() 
-            << "\t;\n}" << std::endl;
+            << "\t;\n}\n\n"
+            << "void UnregisterStaticLuaProperties() \n{\n"
+            << ssAutoNull.str()
+            << "}\n";
         return ss.str();
     }
 
@@ -580,7 +592,7 @@ CodeGenerator::~CodeGenerator()
 
 bool CodeGenerator::ParseAST(const std::string& InputFile)
 {
-    return impl->ParseAST(InputFile);
+    return impl->ParseAST(InputFile, AutoNullMacro);
 }
 
 std::string CodeGenerator::GetResult()
