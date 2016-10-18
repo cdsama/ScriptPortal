@@ -99,6 +99,6 @@ namespace hp
         Scope Scopes[64];
         Scope *TopScope;
         Phase phase;
-        void ParseProperty(Token &token);
+        void ParseProperty(Token &token, const std::string& macroName);
     };
 }

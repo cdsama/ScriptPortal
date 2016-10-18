@@ -94,7 +94,7 @@ int main(int argc, char** argv)
         ValueArg<string> EnumName("e", "enum", "The name of the enum macro", false, "ENUM", "", cmd);
         ValueArg<string> ClassName("c", "class", "The name of the class macro", false, "CLASS", "", cmd);
         MultiArg<string> FunctionName("f", "function", "The name of the function macro", false, "", cmd);
-        ValueArg<string> PropertyName("p", "property", "The name of the property macro", false, "PROPERTY", "", cmd);
+        MultiArg<string> PropertyName("p", "property", "The name of the property macro", false, "", cmd);
         MultiArg<string> CustomMacro("m", "macro", "Custom macro names to parse", false, "", cmd);
         ValueArg<string> OutputFileArg("o", "output", "Output file path for writing json ast", false, "", "", cmd);
         SwitchArg IsDirArg("d", "directory", "Input Files are directories", cmd, false);

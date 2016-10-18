@@ -10,7 +10,7 @@ namespace hp
         std::string ClassNameMacro;
         std::vector<std::string> FunctionNameMacro;
         std::string EnumNameMacro;
-        std::string PropertyNameMacro;
+        std::vector<std::string> PropertyNameMacro;
         std::vector<std::string> CustomMacros;
     };
 }

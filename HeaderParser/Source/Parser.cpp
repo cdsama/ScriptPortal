@@ -258,9 +258,9 @@ namespace hp {
         {
             ParseFunction(token, *customMacroIt);
         }
-        else if (token.token == options.PropertyNameMacro)
+        else if ((customMacroIt = std::find(options.PropertyNameMacro.begin(), options.PropertyNameMacro.end(), token.token)) != options.PropertyNameMacro.end())
         {
-            ParseProperty(token);
+            ParseProperty(token, *customMacroIt);
         }
         else if (token.token == "namespace")
         {
@@ -707,11 +707,13 @@ namespace hp {
     }
 
     //-------------------------------------------------------------------------------------------------
-    void Parser::ParseProperty(Token &token)
+    void Parser::ParseProperty(Token &token, const std::string& macroName)
     {
         Writer.StartObject();
         Writer.String("type");
         Writer.String("property");
+        Writer.String("macro");
+        Writer.String(macroName.c_str());
         Writer.String("line");
         Writer.Uint((unsigned)token.StartLine);
 
