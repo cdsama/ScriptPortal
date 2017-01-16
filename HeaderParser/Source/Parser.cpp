@@ -549,6 +549,25 @@ namespace hp {
         Writer.String("name");
         Writer.String(token.token.c_str());
 
+        if (MatchSymbol("="))
+        {
+            Writer.String("members");
+            Writer.StartArray();
+            PushScope(token.token, ScopeType::Namespace, AccessControlType::Public);
+            PopScope();
+            Writer.EndArray();
+            Writer.EndObject();
+            Token t;
+            while (GetToken(t))
+            {
+                if (t.token == ";")
+                {
+                    break;
+                }
+            }
+            return;
+        }
+
         RequireSymbol("{");
 
         Writer.String("members");
