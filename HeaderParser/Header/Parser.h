@@ -63,7 +63,7 @@ namespace hp
         void PushScope(const std::string& name, ScopeType scopeType, AccessControlType accessControlType);
         void PopScope();
 
-        void ParseNamespace();
+        void ParseNamespace(Token* const macrotoken = nullptr);
         bool ParseAccessControl(const Token& token, AccessControlType& type);
 
         AccessControlType current_access_control_type() const { return TopScope->currentAccessControlType; }
@@ -96,7 +96,7 @@ namespace hp
             AccessControlType currentAccessControlType;
         };
 
-        Scope Scopes[64];
+        Scope Scopes[128];
         Scope *TopScope;
         Phase phase;
         void ParseProperty(Token &token, const std::string& macroName);

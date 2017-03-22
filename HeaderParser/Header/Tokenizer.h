@@ -64,22 +64,22 @@ namespace hp
 
     protected:
         /// The input
-        const char *Input;
+        const char *Input = nullptr;
 
         /// The length of the input
-        std::size_t InputLength;
+        std::size_t InputLength = 0;
 
         /// Current position in the input
-        std::size_t CursorPos;
+        std::size_t CursorPos = 0;
 
         /// Current line of the cursor
-        std::size_t CursorLine;
+        std::size_t CursorLine = 0;
 
         /// The cursor position of the last read character
-        std::size_t PrevCursorPos;
+        std::size_t PrevCursorPos = 0;
 
         /// The cursor line of the the last read character
-        std::size_t PrevCursorLine;
+        std::size_t PrevCursorLine = 0;
 
         /// Stores the last comment block
         struct Comment {

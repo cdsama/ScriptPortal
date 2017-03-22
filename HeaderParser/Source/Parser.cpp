@@ -266,6 +266,10 @@ namespace hp {
         {
             ParseNamespace();
         }
+        else if (token.token == options.NamespaceMacro)
+        {
+            ParseNamespace(&token);
+        }
         else if (ParseAccessControl(token, TopScope->currentAccessControlType))
         {
             RequireSymbol(":");
@@ -534,11 +538,21 @@ namespace hp {
     }
 
     //--------------------------------------------------------------------------------------------------
-    void Parser::ParseNamespace()
+    void Parser::ParseNamespace(Token* const macrotoken)
     {
         Writer.StartObject();
         Writer.String("type");
         Writer.String("namespace");
+
+        ParseComment(true);
+
+        if (macrotoken)
+        {
+            Writer.String("macro");
+            Writer.String(macrotoken->token.c_str());
+            ParseMacroMeta();
+            RequireIdentifier("namespace");
+        }
 
         Token token;
         if (!GetIdentifier(token))

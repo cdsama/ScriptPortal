@@ -7,6 +7,7 @@ namespace hp
 {
     struct Options
     {
+        std::string NamespaceMacro;
         std::string ClassNameMacro;
         std::vector<std::string> FunctionNameMacro;
         std::string EnumNameMacro;

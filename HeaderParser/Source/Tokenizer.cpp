@@ -10,11 +10,7 @@
 namespace hp {
     static const char EndOfFileChar = std::char_traits<char>::to_char_type(std::char_traits<char>::eof());
     //--------------------------------------------------------------------------------------------------
-    Tokenizer::Tokenizer() :
-        Input(nullptr),
-        InputLength(0),
-        CursorPos(0),
-        CursorLine(0)
+    Tokenizer::Tokenizer()
     {
 
     }

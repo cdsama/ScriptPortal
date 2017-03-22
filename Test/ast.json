@@ -1,74 +1,5 @@
 [
     {
-        "file": "Player.h",
-        "content": [
-            {
-                "type": "include",
-                "file": "Object.h"
-            },
-            {
-                "type": "include",
-                "file": "sstream"
-            },
-            {
-                "type": "class",
-                "line": 8,
-                "comment": "The class of a player data",
-                "meta": {},
-                "name": "Player",
-                "parents": [
-                    {
-                        "access": "public",
-                        "name": {
-                            "type": "literal",
-                            "name": "Object"
-                        }
-                    }
-                ],
-                "members": [
-                    {
-                        "type": "function",
-                        "macro": "LUA_FUNCTION",
-                        "line": 18,
-                        "meta": {},
-                        "access": "public",
-                        "returnType": {
-                            "type": "literal",
-                            "name": "std::string"
-                        },
-                        "name": "GetDiscribe",
-                        "arguments": []
-                    },
-                    {
-                        "type": "property",
-                        "line": 27,
-                        "comment": "The id of a player",
-                        "meta": {
-                            "readonly": null
-                        },
-                        "access": "public",
-                        "dataType": {
-                            "type": "literal",
-                            "name": "int"
-                        },
-                        "name": "ID"
-                    },
-                    {
-                        "type": "property",
-                        "line": 30,
-                        "meta": {},
-                        "access": "public",
-                        "dataType": {
-                            "type": "literal",
-                            "name": "int"
-                        },
-                        "name": "IP"
-                    }
-                ]
-            }
-        ]
-    },
-    {
         "file": "Object.h",
         "content": [
             {
@@ -122,6 +53,77 @@
                         },
                         "name": "GetName",
                         "arguments": []
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "file": "Player.h",
+        "content": [
+            {
+                "type": "include",
+                "file": "Object.h"
+            },
+            {
+                "type": "include",
+                "file": "sstream"
+            },
+            {
+                "type": "class",
+                "line": 8,
+                "comment": "The class of a player data",
+                "meta": {},
+                "name": "Player",
+                "parents": [
+                    {
+                        "access": "public",
+                        "name": {
+                            "type": "literal",
+                            "name": "Object"
+                        }
+                    }
+                ],
+                "members": [
+                    {
+                        "type": "function",
+                        "macro": "LUA_FUNCTION",
+                        "line": 18,
+                        "meta": {},
+                        "access": "public",
+                        "returnType": {
+                            "type": "literal",
+                            "name": "std::string"
+                        },
+                        "name": "GetDiscribe",
+                        "arguments": []
+                    },
+                    {
+                        "type": "property",
+                        "macro": "LUA_PROPERTY",
+                        "line": 27,
+                        "comment": "The id of a player",
+                        "meta": {
+                            "readonly": null
+                        },
+                        "access": "public",
+                        "dataType": {
+                            "type": "literal",
+                            "name": "int"
+                        },
+                        "name": "ID"
+                    },
+                    {
+                        "type": "property",
+                        "macro": "LUA_PROPERTY",
+                        "line": 30,
+                        "meta": {},
+                        "access": "public",
+                        "dataType": {
+                            "type": "literal",
+                            "name": "int"
+                        },
+                        "name": "IP"
                     }
                 ]
             }
