@@ -1,64 +1,5 @@
 [
     {
-        "file": "Object.h",
-        "content": [
-            {
-                "type": "include",
-                "file": "string"
-            },
-            {
-                "type": "include",
-                "file": "luaexport"
-            },
-            {
-                "type": "enum",
-                "line": 7,
-                "comment": "The type enum of an object.",
-                "meta": {},
-                "name": "ObjectType",
-                "cxxclass": true,
-                "base": "int",
-                "members": [
-                    {
-                        "key": "Player"
-                    },
-                    {
-                        "key": "Npc"
-                    },
-                    {
-                        "key": "Item"
-                    }
-                ]
-            },
-            {
-                "type": "class",
-                "line": 15,
-                "meta": {},
-                "name": "Object",
-                "members": [
-                    {
-                        "type": "function",
-                        "macro": "LUA_FUNCTION",
-                        "line": 29,
-                        "comment": "Get name of an object.",
-                        "meta": {},
-                        "access": "public",
-                        "returnType": {
-                            "type": "reference",
-                            "baseType": {
-                                "const": true,
-                                "type": "literal",
-                                "name": "std::string"
-                            }
-                        },
-                        "name": "GetName",
-                        "arguments": []
-                    }
-                ]
-            }
-        ]
-    },
-    {
         "file": "Player.h",
         "content": [
             {
@@ -73,7 +14,9 @@
                 "type": "class",
                 "line": 8,
                 "comment": "The class of a player data",
-                "meta": {},
+                "meta": {
+                    "name": "LuaPlayer"
+                },
                 "name": "Player",
                 "parents": [
                     {
@@ -100,7 +43,7 @@
                     },
                     {
                         "type": "property",
-                        "macro": "LUA_PROPERTY",
+                        "macro": "LUA_DATA",
                         "line": 27,
                         "comment": "The id of a player",
                         "meta": {
@@ -115,7 +58,7 @@
                     },
                     {
                         "type": "property",
-                        "macro": "LUA_PROPERTY",
+                        "macro": "LUA_DATA",
                         "line": 30,
                         "meta": {},
                         "access": "public",
@@ -124,6 +67,143 @@
                             "name": "int"
                         },
                         "name": "IP"
+                    },
+                    {
+                        "type": "function",
+                        "macro": "LUA_PROPERTY",
+                        "line": 33,
+                        "meta": {
+                            "name": "strName"
+                        },
+                        "access": "public",
+                        "returnType": {
+                            "type": "reference",
+                            "baseType": {
+                                "type": "literal",
+                                "name": "std::string"
+                            }
+                        },
+                        "name": "GetStrName",
+                        "arguments": [],
+                        "const": true
+                    },
+                    {
+                        "type": "function",
+                        "macro": "LUA_PROPERTY",
+                        "line": 36,
+                        "meta": {
+                            "name": "Name2",
+                            "setter": "SetStrName2"
+                        },
+                        "access": "public",
+                        "returnType": {
+                            "type": "reference",
+                            "baseType": {
+                                "type": "literal",
+                                "name": "std::string"
+                            }
+                        },
+                        "name": "GetStrName2",
+                        "arguments": [],
+                        "const": true
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "file": "Object.h",
+        "content": [
+            {
+                "type": "include",
+                "file": "string"
+            },
+            {
+                "type": "include",
+                "file": "luaexport"
+            },
+            {
+                "type": "namespace",
+                "comment": "The type enum of an object.",
+                "macro": "LUA_NAMESPACE",
+                "meta": {
+                    "name": "ot"
+                },
+                "name": "testnamespace",
+                "members": [
+                    {
+                        "type": "enum",
+                        "line": 9,
+                        "meta": {
+                            "name": "OT"
+                        },
+                        "name": "ObjectType",
+                        "cxxclass": true,
+                        "base": "int",
+                        "members": [
+                            {
+                                "key": "Player"
+                            },
+                            {
+                                "key": "Npc"
+                            },
+                            {
+                                "key": "Item"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "type": "class",
+                "line": 17,
+                "meta": {},
+                "name": "Object",
+                "members": [
+                    {
+                        "type": "function",
+                        "macro": "LUA_FUNCTION",
+                        "line": 31,
+                        "comment": "Get name of an object.",
+                        "meta": {
+                            "name": "GetNameFunc"
+                        },
+                        "access": "public",
+                        "returnType": {
+                            "type": "reference",
+                            "baseType": {
+                                "const": true,
+                                "type": "literal",
+                                "name": "std::string"
+                            }
+                        },
+                        "name": "GetName",
+                        "arguments": []
+                    },
+                    {
+                        "type": "property",
+                        "macro": "LUA_CALLBACK",
+                        "line": 36,
+                        "meta": {
+                            "name": "OnObjEnd"
+                        },
+                        "access": "public",
+                        "dataType": {
+                            "static": true,
+                            "type": "template",
+                            "name": "std::function",
+                            "arguments": [
+                                {
+                                    "type": "function",
+                                    "returnType": {
+                                        "type": "literal",
+                                        "name": "void"
+                                    },
+                                    "arguments": []
+                                }
+                            ]
+                        },
+                        "name": "OnEnd"
                     }
                 ]
             }

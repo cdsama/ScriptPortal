@@ -4,21 +4,26 @@
 #include "Player.h"
 #include "PlayerManager.h"
 
-void RegistAPIs(luaportal::LuaState& LOL) 
+void RegisterAPIs(luaportal::LuaState& LOL) 
 {
 	LOL.GlobalContext()
-	.BeginEnum<ObjectType>("ObjectType")
-	.AddEnumValue("Player", ObjectType::Player)
-	.AddEnumValue("Npc", ObjectType::Npc)
-	.AddEnumValue("Item", ObjectType::Item)
+	.BeginNamespace("ot")
+	.BeginEnum<testnamespace::ObjectType>("OT")
+	.AddEnumValue("Player", testnamespace::ObjectType::Player)
+	.AddEnumValue("Npc", testnamespace::ObjectType::Npc)
+	.AddEnumValue("Item", testnamespace::ObjectType::Item)
 	.EndEnum()
+	.EndNamespace()
 	.BeginClass<Object>("Object")
-	.AddFunction("GetName", &Object::GetName)
+	.AddFunction("GetNameFunc", &Object::GetName)
+	.AddStaticData("OnObjEnd", &Object::OnEnd, true)
 	.EndClass()
-	.DeriveClass<Player,Object>("Player")
+	.DeriveClass<Player,Object>("LuaPlayer")
 	.AddFunction("GetDiscribe", &Player::GetDiscribe)
 	.AddData("ID", &Player::ID, false)
 	.AddData("IP", &Player::IP, true)
+	.AddProperty("strName", &Player::GetStrName)
+	.AddProperty("Name2", &Player::GetStrName2, &Player::SetStrName2)
 	.EndClass()
 	.BeginClass<PlayerManager>("PlayerManager")
 	.AddStaticFunction("GetPlayerManagerVersion", &PlayerManager::GetPlayerManagerVersion)
@@ -28,4 +33,9 @@ void RegistAPIs(luaportal::LuaState& LOL)
 	.AddFunction("GetCurrentTimeTest", &Test::GetCurrentTimeTest)
 	.AddFunction("GetPlayerManager", &PlayerManager::GetPlayerManager)
 	;
+}
+
+void UnregisterStaticLuaProperties() 
+{
+	Object::OnEnd = nullptr;
 }
