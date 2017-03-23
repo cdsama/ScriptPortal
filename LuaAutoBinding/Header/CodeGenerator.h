@@ -15,6 +15,7 @@ public:
     std::string GetResult();
 
     std::string AutoNullMacro;
+    std::string FunctionPropertyMacro;
 
 private:
     struct Impl;

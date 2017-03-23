@@ -17,21 +17,24 @@ struct CodeGenerator::Impl
 
     struct ContentNode {
         std::string Name;
+        std::string ExportName;
         virtual ~ContentNode() {};
     };
 
     enum class FunctionType {
         Common,
         Static,
-        Global
+        Global,
+        Property
     };
 
     struct LuaFunction : ContentNode {
         std::string Comment;
+        std::string SetterName;
         FunctionType Type;
     };
 
-    struct LuaProperty : ContentNode {
+    struct LuaData : ContentNode {
         std::string Comment;
         bool Writeable;
         bool IsStatic;
@@ -51,12 +54,18 @@ struct CodeGenerator::Impl
 
     struct CxxNamespace : ContentNode {
         std::list<std::shared_ptr<ContentNode>> Nodes;
+        bool bShouldExport;
     };
 
     struct HeaderFile : ContentNode {
         std::list<std::string> IncludeFiles;
         std::list<std::shared_ptr<ContentNode>> Nodes;
     };
+
+    friend bool operator<(const std::shared_ptr<HeaderFile>& lhs,const std::shared_ptr<HeaderFile>& rhs)
+    {
+        return lhs->Name < rhs->Name;
+    }
 
     std::stringstream ssInclude;
     std::stringstream ssNormal;
@@ -69,19 +78,24 @@ struct CodeGenerator::Impl
 
     std::string CurrentFile;
     std::string AutoNullMacro;
+    std::string FunctionPropertyMacro;
 
     Document document;
 
-    
+    static inline std::string& GetExportName(const std::shared_ptr<ContentNode>& Node)
+    {
+        return Node->ExportName.empty() ? Node->Name : Node->ExportName;
+    }
 
     Impl()
     {
 
     }
 
-    bool ParseAST(const std::string& InputFile, const std::string& AutoNullMacro_)
+    bool ParseAST(const std::string& InputFile, const std::string& AutoNullMacro_, std::string FunctionPropertyMacro_)
     {
         AutoNullMacro = AutoNullMacro_;
+        FunctionPropertyMacro = FunctionPropertyMacro_;
         std::ifstream ifs(InputFile);
         if (!ifs.is_open()) {
             std::cerr << "Could not open " << InputFile << std::endl;
@@ -213,6 +227,11 @@ struct CodeGenerator::Impl
 
         NamespaceStack.push_back(NSNode->Name);
 
+        if (NSNode->bShouldExport)
+        {
+            ssNormal << "\t.BeginNamespace(\"" << GetExportName(Node) << "\")\n";
+        }
+
         for (auto& Node : NSNode->Nodes)
         {
             if (GenerateNamespace(Node, NamespaceStack)
@@ -223,6 +242,11 @@ struct CodeGenerator::Impl
             {
                 std::cerr << "Invalid Node:" << Node->Name << std::endl;
             }
+        }
+
+        if (NSNode->bShouldExport)
+        {
+            ssNormal << "\t.EndNamespace()\n";
         }
 
         NamespaceStack.pop_back();
@@ -249,18 +273,18 @@ struct CodeGenerator::Impl
 
         if (ClassNode->ParentClass.empty())
         {
-            ssNormal << "\t.BeginClass<" << GetStackedNameSpace(NamespaceStack) << ClassNode->Name << ">(\"" << ClassNode->Name << "\")\n";
+            ssNormal << "\t.BeginClass<" << GetStackedNameSpace(NamespaceStack) << ClassNode->Name << ">(\"" << GetExportName(Node) << "\")\n";
         } 
         else
         {
-            ssNormal << "\t.DeriveClass<" << GetStackedNameSpace(NamespaceStack) << ClassNode->Name << "," << ClassNode->ParentClass << ">(\"" << ClassNode->Name << "\")\n";
+            ssNormal << "\t.DeriveClass<" << GetStackedNameSpace(NamespaceStack) << ClassNode->Name << "," << ClassNode->ParentClass << ">(\"" << GetExportName(Node) << "\")\n";
         }
 
         NamespaceStack.push_back(ClassNode->Name);
         
         for (auto& Node : ClassNode->Nodes)
         {
-            if (GenerateProperty(Node, NamespaceStack)
+            if (GenerateData(Node, NamespaceStack)
                 && GenerateEnum(Node, NamespaceStack)
                 && GenerateFunction(Node, NamespaceStack)
                 )
@@ -285,17 +309,30 @@ struct CodeGenerator::Impl
         {
         case FunctionType::Common:
         {
-            ssNormal << "\t.AddFunction(\"" << FunctionNode->Name << "\", &" << GetStackedNameSpace(NamespaceStack) << FunctionNode->Name << ")\n";
+            ssNormal << "\t.AddFunction(\"" << GetExportName(Node) << "\", &" << GetStackedNameSpace(NamespaceStack) << FunctionNode->Name << ")\n";
             break;
         }
         case FunctionType::Static:
         {
-            ssNormal << "\t.AddStaticFunction(\"" << FunctionNode->Name << "\", &" << GetStackedNameSpace(NamespaceStack) << FunctionNode->Name << ")\n";
+            ssNormal << "\t.AddStaticFunction(\"" << GetExportName(Node) << "\", &" << GetStackedNameSpace(NamespaceStack) << FunctionNode->Name << ")\n";
             break;
         }
         case FunctionType::Global:
         {
-            ssGlobal << "\t.AddFunction(\"" << FunctionNode->Name << "\", &" << GetStackedNameSpace(NamespaceStack) << FunctionNode->Name << ")\n";
+            ssGlobal << "\t.AddFunction(\"" << GetExportName(Node) << "\", &" << GetStackedNameSpace(NamespaceStack) << FunctionNode->Name << ")\n";
+            break;
+        }
+        case FunctionType::Property:
+        {
+            auto StackedNameSpace = GetStackedNameSpace(NamespaceStack);
+            if (FunctionNode->SetterName.empty())
+            {
+                ssNormal << "\t.AddProperty(\"" << GetExportName(Node) << "\", &" << StackedNameSpace << FunctionNode->Name << ")\n";
+            }
+            else
+            {
+                ssNormal << "\t.AddProperty(\"" << GetExportName(Node) << "\", &" << StackedNameSpace << FunctionNode->Name << ", &"<< StackedNameSpace << FunctionNode->SetterName << ")\n";
+            }
             break;
         }
         default:
@@ -313,7 +350,7 @@ struct CodeGenerator::Impl
             return true;
         }
         auto StackedNameSpace = GetStackedNameSpace(NamespaceStack);
-        ssNormal << "\t.BeginEnum<" << StackedNameSpace << EnumNode->Name << ">(\"" << EnumNode->Name << "\")\n";
+        ssNormal << "\t.BeginEnum<" << StackedNameSpace << EnumNode->Name << ">(\"" << GetExportName(Node) << "\")\n";
         for (auto& EnumKey : EnumNode->Keys)
         {
             ssNormal << "\t.AddEnumValue(\"" << EnumKey << "\", " << StackedNameSpace << EnumNode->Name << "::" << EnumKey << ")\n";
@@ -322,18 +359,18 @@ struct CodeGenerator::Impl
         return false;
     }
 
-    bool GenerateProperty(const std::shared_ptr<ContentNode>& Node, std::list<std::string>& NamespaceStack)
+    bool GenerateData(const std::shared_ptr<ContentNode>& Node, std::list<std::string>& NamespaceStack)
     {
-        auto PropertyNode = dynamic_cast<LuaProperty*>(Node.get());
-        if (PropertyNode == nullptr)
+        auto DataNode = dynamic_cast<LuaData*>(Node.get());
+        if (DataNode == nullptr)
         {
             return true;
         }
         auto StackedNameSpace = GetStackedNameSpace(NamespaceStack);
-        ssNormal << (PropertyNode->IsStatic ? "\t.AddStaticData(\"" : "\t.AddData(\"") << PropertyNode->Name << "\", &" << StackedNameSpace << PropertyNode->Name << (PropertyNode->Writeable ? ", true" : ", false") << ")\n";
-        if (PropertyNode->IsStatic && PropertyNode->IsAutoNull)
+        ssNormal << (DataNode->IsStatic ? "\t.AddStaticData(\"" : "\t.AddData(\"") << GetExportName(Node) << "\", &" << StackedNameSpace << DataNode->Name << (DataNode->Writeable ? ", true" : ", false") << ")\n";
+        if (DataNode->IsStatic && DataNode->IsAutoNull)
         {
-            ssAutoNull << "\t" << StackedNameSpace << PropertyNode->Name << " = nullptr;\n";
+            ssAutoNull << "\t" << StackedNameSpace << DataNode->Name << " = nullptr;\n";
         }
 
         return false;
@@ -373,6 +410,7 @@ struct CodeGenerator::Impl
             Files.push_back(file);
             UnregistedFiles.insert(file);
         }
+        Files.sort();
     }
 
     std::shared_ptr<HeaderFile> ParseFile(const Document::ValueType& FileObject)
@@ -406,6 +444,7 @@ struct CodeGenerator::Impl
                 File->Nodes.push_back(ParseNamespace(Unit));
             }
         }
+        File->IncludeFiles.sort();
         return File;
     }
 
@@ -422,6 +461,8 @@ struct CodeGenerator::Impl
     {
         std::shared_ptr<CxxNamespace> Namespace = std::make_shared<CxxNamespace>();
         Namespace->Name = NamespaceObject["name"].GetString();
+        Namespace->bShouldExport = NamespaceObject.HasMember("macro");
+        TryGetExportName(NamespaceObject, Namespace->ExportName);
         auto& NamespaceMembers = NamespaceObject["members"];
         for (SizeType i = 0; i < NamespaceMembers.Size(); ++i)
         {
@@ -443,10 +484,25 @@ struct CodeGenerator::Impl
         return Namespace;
     }
 
+    void TryGetExportName(const Document::ValueType& Object, std::string& Name)
+    {
+        auto itrMeta = Object.FindMember("meta");
+        if (itrMeta != Object.MemberEnd())
+        {
+            auto itr = itrMeta->value.FindMember("name");
+            if (itr != itrMeta->value.MemberEnd())
+            {
+                Name = itr->value.GetString();
+            }
+        }
+        
+    }
+
     std::shared_ptr<LuaEnum> ParseEnum(const Document::ValueType& EnumObject)
     {
         std::shared_ptr<LuaEnum> Enum = std::make_shared<LuaEnum>();
         Enum->Name = EnumObject["name"].GetString();
+        TryGetExportName(EnumObject, Enum->ExportName);
         auto& EnumMembers = EnumObject["members"];
         for (SizeType i = 0; i < EnumMembers.Size(); ++i)
         {
@@ -460,6 +516,7 @@ struct CodeGenerator::Impl
     {
         std::shared_ptr<LuaClass> Class = std::make_shared<LuaClass>();
         Class->Name = ClassObject["name"].GetString();
+        TryGetExportName(ClassObject, Class->ExportName);
         if (!ClassObject["meta"].HasMember("noinherit"))
         {
             GetClassParent(ClassObject, Class->ParentClass);
@@ -476,7 +533,7 @@ struct CodeGenerator::Impl
             }
             else if (type == "property")
             {
-                Class->Nodes.push_back(ParseProperty(Unit));
+                Class->Nodes.push_back(ParseData(Unit));
             }
             else if (type == "enum")
             {
@@ -491,6 +548,7 @@ struct CodeGenerator::Impl
     {
         std::shared_ptr<LuaFunction> Function = std::make_shared<LuaFunction>();
         Function->Name = FunctionObject["name"].GetString();
+        TryGetExportName(FunctionObject, Function->ExportName);
         Function->Type = FunctionType::Common;
         bool IsMemberFunc = false;
         auto itr = FunctionObject.FindMember("access");
@@ -520,19 +578,37 @@ struct CodeGenerator::Impl
                     ? FunctionType::Static 
                     : FunctionType::Common);
         }
+
+        if ((FunctionObject["macro"].GetString() == FunctionPropertyMacro))
+        {
+            if (IsStatic || !IsMemberFunc)
+            {
+                std::stringstream ss;
+                ss << "Property :" << Function->Name << "must not be static and should be member func, Line: " << FunctionObject["line"].GetInt();
+                throw ss.str();
+            }
+            Function->Type = FunctionType::Property;
+            auto& FunctionMeta = FunctionObject["meta"];
+            auto itrSetter = FunctionMeta.FindMember("setter");
+            if (itrSetter != FunctionMeta.MemberEnd())
+            {
+                Function->SetterName = itrSetter->value.GetString();
+            }
+        }
         TryGetComment(FunctionObject, Function->Comment);
         return Function;
     }
 
-    std::shared_ptr<LuaProperty> ParseProperty(const Document::ValueType& PropertyObject)
+    std::shared_ptr<LuaData> ParseData(const Document::ValueType& DataObject)
     {
-        std::shared_ptr<LuaProperty> Property = std::make_shared<LuaProperty>();
-        Property->Name = PropertyObject["name"].GetString();
-        Property->Writeable = !PropertyObject["meta"].HasMember("readonly");
-        Property->IsStatic = PropertyObject["dataType"].HasMember("static");
-        Property->IsAutoNull = (PropertyObject["macro"].GetString() == AutoNullMacro);
-        TryGetComment(PropertyObject, Property->Comment);
-        return Property;
+        std::shared_ptr<LuaData> Data = std::make_shared<LuaData>();
+        Data->Name = DataObject["name"].GetString();
+        TryGetExportName(DataObject, Data->ExportName);
+        Data->Writeable = !DataObject["meta"].HasMember("readonly");
+        Data->IsStatic = DataObject["dataType"].HasMember("static");
+        Data->IsAutoNull = (DataObject["macro"].GetString() == AutoNullMacro);
+        TryGetComment(DataObject, Data->Comment);
+        return Data;
     }
 
     bool GetClassParent(const Document::ValueType& ClassObject, std::string& OutParentClassName)
@@ -592,7 +668,7 @@ CodeGenerator::~CodeGenerator()
 
 bool CodeGenerator::ParseAST(const std::string& InputFile)
 {
-    return impl->ParseAST(InputFile, AutoNullMacro);
+    return impl->ParseAST(InputFile, AutoNullMacro, FunctionPropertyMacro);
 }
 
 std::string CodeGenerator::GetResult()

@@ -17,6 +17,7 @@ int main(int argc, const char** argv)
     string OutputFile;
     vector<string> PreIncludeList;
     string AutoNullMacro;
+    string FunctionPropertyMacro;
     try
     {
         using namespace TCLAP;
@@ -26,6 +27,7 @@ int main(int argc, const char** argv)
         ValueArg<string> OutputFileArg("o", "output", "Output file path for writing generated code.", false, "", "", cmd);
         MultiArg<string> PreIncludeListArg("p", "preinclude", "Add pre include contents.", false, "", cmd);
         ValueArg<string> AutoNullMacroArg("a", "autonullmacro", "Generate set data nullptr code.", false, "", "", cmd);
+        ValueArg<string> FunctionPropertyMacroArg("f", "functionpropertymacro", "Mark function as property.", false, "", "", cmd);
         UnlabeledValueArg<string> InputFileArg("InputFile", "Input json ast file.", true, "", "", cmd);
         
 
@@ -34,6 +36,7 @@ int main(int argc, const char** argv)
         OutputFile = OutputFileArg.getValue();
         PreIncludeList = PreIncludeListArg.getValue();
         AutoNullMacro = AutoNullMacroArg.getValue();
+        FunctionPropertyMacro = FunctionPropertyMacroArg.getValue();
     }
     catch (TCLAP::ArgException& e)
     {
@@ -44,6 +47,7 @@ int main(int argc, const char** argv)
 
     CodeGenerator cg;
     cg.AutoNullMacro = AutoNullMacro;
+    cg.FunctionPropertyMacro = FunctionPropertyMacro;
     if (cg.ParseAST(InputFile))
     {
         if (OutputFile.empty())
