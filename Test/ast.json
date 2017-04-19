@@ -257,8 +257,85 @@
                     },
                     {
                         "type": "function",
+                        "macro": "LUA_CFUNCTION",
+                        "line": 21,
+                        "meta": {},
+                        "access": "public",
+                        "returnType": {
+                            "type": "literal",
+                            "name": "int"
+                        },
+                        "name": "TestCFunction1",
+                        "arguments": [
+                            {
+                                "type": {
+                                    "type": "pointer",
+                                    "baseType": {
+                                        "type": "literal",
+                                        "name": "lua_State"
+                                    }
+                                },
+                                "name": "L"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "function",
+                        "macro": "LUA_CFUNCTION",
+                        "line": 26,
+                        "meta": {},
+                        "access": "public",
+                        "static": true,
+                        "returnType": {
+                            "type": "literal",
+                            "name": "int"
+                        },
+                        "name": "TestCFunction2",
+                        "arguments": [
+                            {
+                                "type": {
+                                    "type": "pointer",
+                                    "baseType": {
+                                        "type": "literal",
+                                        "name": "lua_State"
+                                    }
+                                },
+                                "name": "L"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "function",
+                        "macro": "LUA_CFUNCTION",
+                        "line": 31,
+                        "comment": "Get name of an object.",
+                        "meta": {
+                            "global": null
+                        },
+                        "access": "public",
+                        "static": true,
+                        "returnType": {
+                            "type": "literal",
+                            "name": "int"
+                        },
+                        "name": "TestCFunction3",
+                        "arguments": [
+                            {
+                                "type": {
+                                    "type": "pointer",
+                                    "baseType": {
+                                        "type": "literal",
+                                        "name": "lua_State"
+                                    }
+                                },
+                                "name": "L"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "function",
                         "macro": "LUA_FUNCTION",
-                        "line": 20,
+                        "line": 36,
                         "meta": {},
                         "access": "public",
                         "returnType": {
@@ -276,7 +353,7 @@
             {
                 "type": "function",
                 "macro": "LUA_FUNCTION",
-                "line": 30,
+                "line": 46,
                 "meta": {},
                 "returnType": {
                     "type": "literal",
@@ -292,7 +369,7 @@
                     {
                         "type": "function",
                         "macro": "LUA_FUNCTION",
-                        "line": 38,
+                        "line": 54,
                         "comment": "Get current time to string.",
                         "meta": {},
                         "returnType": {

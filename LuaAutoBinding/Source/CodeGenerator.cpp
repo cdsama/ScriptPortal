@@ -32,6 +32,7 @@ struct CodeGenerator::Impl
         std::string Comment;
         std::string SetterName;
         FunctionType Type;
+        bool IsCFunction = false;
     };
 
     struct LuaData : ContentNode {
@@ -79,6 +80,7 @@ struct CodeGenerator::Impl
     std::string CurrentFile;
     std::string AutoNullMacro;
     std::string FunctionPropertyMacro;
+    std::string CFunctionMacro;
 
     Document document;
 
@@ -92,10 +94,8 @@ struct CodeGenerator::Impl
 
     }
 
-    bool ParseAST(const std::string& InputFile, const std::string& AutoNullMacro_, std::string FunctionPropertyMacro_)
+    bool ParseAST(const std::string& InputFile)
     {
-        AutoNullMacro = AutoNullMacro_;
-        FunctionPropertyMacro = FunctionPropertyMacro_;
         std::ifstream ifs(InputFile);
         if (!ifs.is_open()) {
             std::cerr << "Could not open " << InputFile << std::endl;
@@ -305,21 +305,22 @@ struct CodeGenerator::Impl
         {
             return true;
         }
+        std::string COrEmptyString = FunctionNode->IsCFunction ? "C" : "";
         switch (FunctionNode->Type)
         {
         case FunctionType::Common:
         {
-            ssNormal << "\t.AddFunction(\"" << GetExportName(Node) << "\", &" << GetStackedNameSpace(NamespaceStack) << FunctionNode->Name << ")\n";
+            ssNormal << "\t.Add" << COrEmptyString << "Function(\"" << GetExportName(Node) << "\", &" << GetStackedNameSpace(NamespaceStack) << FunctionNode->Name << ")\n";
             break;
         }
         case FunctionType::Static:
         {
-            ssNormal << "\t.AddStaticFunction(\"" << GetExportName(Node) << "\", &" << GetStackedNameSpace(NamespaceStack) << FunctionNode->Name << ")\n";
+            ssNormal << "\t.AddStatic" << COrEmptyString << "Function(\"" << GetExportName(Node) << "\", &" << GetStackedNameSpace(NamespaceStack) << FunctionNode->Name << ")\n";
             break;
         }
         case FunctionType::Global:
         {
-            ssGlobal << "\t.AddFunction(\"" << GetExportName(Node) << "\", &" << GetStackedNameSpace(NamespaceStack) << FunctionNode->Name << ")\n";
+            ssGlobal << "\t.Add" << COrEmptyString << "Function(\"" << GetExportName(Node) << "\", &" << GetStackedNameSpace(NamespaceStack) << FunctionNode->Name << ")\n";
             break;
         }
         case FunctionType::Property:
@@ -550,6 +551,7 @@ struct CodeGenerator::Impl
         Function->Name = FunctionObject["name"].GetString();
         TryGetExportName(FunctionObject, Function->ExportName);
         Function->Type = FunctionType::Common;
+        Function->IsCFunction = false;
         bool IsMemberFunc = false;
         auto itr = FunctionObject.FindMember("access");
         if (itr != FunctionObject.MemberEnd())
@@ -578,8 +580,8 @@ struct CodeGenerator::Impl
                     ? FunctionType::Static 
                     : FunctionType::Common);
         }
-
-        if ((FunctionObject["macro"].GetString() == FunctionPropertyMacro))
+        std::string FunctionObjectMacro = FunctionObject["macro"].GetString();
+        if (FunctionObjectMacro == FunctionPropertyMacro)
         {
             if (IsStatic || !IsMemberFunc)
             {
@@ -594,6 +596,10 @@ struct CodeGenerator::Impl
             {
                 Function->SetterName = itrSetter->value.GetString();
             }
+        } 
+        else if (FunctionObjectMacro == CFunctionMacro)
+        {
+            Function->IsCFunction = true;
         }
         TryGetComment(FunctionObject, Function->Comment);
         return Function;
@@ -668,7 +674,10 @@ CodeGenerator::~CodeGenerator()
 
 bool CodeGenerator::ParseAST(const std::string& InputFile)
 {
-    return impl->ParseAST(InputFile, AutoNullMacro, FunctionPropertyMacro);
+    impl->AutoNullMacro = AutoNullMacro;
+    impl->FunctionPropertyMacro = FunctionPropertyMacro;
+    impl->CFunctionMacro = CFunctionMacro;
+    return impl->ParseAST(InputFile);
 }
 
 std::string CodeGenerator::GetResult()

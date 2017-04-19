@@ -27,11 +27,14 @@ void RegisterAPIs(luaportal::LuaState& LOL)
 	.EndClass()
 	.BeginClass<PlayerManager>("PlayerManager")
 	.AddStaticFunction("GetPlayerManagerVersion", &PlayerManager::GetPlayerManagerVersion)
+	.AddCFunction("TestCFunction1", &PlayerManager::TestCFunction1)
+	.AddStaticCFunction("TestCFunction2", &PlayerManager::TestCFunction2)
 	.AddFunction("GetPlayer", &PlayerManager::GetPlayer)
 	.EndClass()
 	.AddFunction("GetCurrentTime", &GetCurrentTime)
 	.AddFunction("GetCurrentTimeTest", &Test::GetCurrentTimeTest)
 	.AddFunction("GetPlayerManager", &PlayerManager::GetPlayerManager)
+	.AddCFunction("TestCFunction3", &PlayerManager::TestCFunction3)
 	;
 }
 

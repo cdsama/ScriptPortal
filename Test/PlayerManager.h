@@ -17,6 +17,22 @@ public:
         return "1.1";
     }
 
+
+    LUA_CFUNCTION()
+    int TestCFunction1(lua_State* L){
+        return 0;
+    }
+
+    LUA_CFUNCTION()
+    static int TestCFunction2(lua_State* L){
+        return 0;
+    }
+
+    LUA_CFUNCTION(global)
+    static int TestCFunction3(lua_State* L){
+        return 0;
+    }
+
     LUA_FUNCTION()
     Player* GetPlayer()
     {
