@@ -19,7 +19,8 @@ class Object
 {
 public:
 
-    Object(const std::string& _name)
+    LUA_CTOR()
+    Object(const std::string& _name, const int a, const std::function<void(bool), int>& b, const int&& c,  const int* const d, int** e, const int** f, const int& g, int const& h)
     : name(_name)
     {
 

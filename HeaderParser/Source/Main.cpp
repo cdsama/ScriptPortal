@@ -94,6 +94,7 @@ int main(int argc, char** argv)
         ValueArg<string> EnumName("e", "enum", "The name of the enum macro", false, "ENUM", "", cmd);
         ValueArg<string> NamespaceName("n", "namespace", "The name of the namespace macro", false, "NAMESPACE", "", cmd);
         ValueArg<string> ClassName("c", "class", "The name of the class macro", false, "CLASS", "", cmd);
+        ValueArg<string> ConstructorName("t", "constructor", "The name of the constructor macro", false, "CTOR", "", cmd);
         MultiArg<string> FunctionName("f", "function", "The name of the function macro", false, "", cmd);
         MultiArg<string> PropertyName("p", "property", "The name of the property macro", false, "", cmd);
         MultiArg<string> CustomMacro("m", "macro", "Custom macro names to parse", false, "", cmd);
@@ -106,6 +107,7 @@ int main(int argc, char** argv)
 
         AppOption.NamespaceMacro = NamespaceName.getValue();
         AppOption.ClassNameMacro = ClassName.getValue();
+        AppOption.ConstructorNameMacro = ConstructorName.getValue();
         AppOption.EnumNameMacro = EnumName.getValue();
         AppOption.FunctionNameMacro = FunctionName.getValue();
         AppOption.CustomMacros = CustomMacro.getValue();

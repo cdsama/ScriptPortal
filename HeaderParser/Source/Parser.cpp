@@ -25,9 +25,9 @@ namespace hp {
             Writer.String("returnType");
             VisitNode(*node.returns);
 
-            Writer.String("arguments");
+            Writer.String("parameters");
             Writer.StartArray();
-            for (auto& arg : node.arguments)
+            for (auto& arg : node.parameters)
             {
                 Writer.StartObject();
                 if (!arg->name.empty())
@@ -91,9 +91,9 @@ namespace hp {
             Writer.String("name");
             Writer.String(node.name.c_str());
 
-            Writer.String("arguments");
+            Writer.String("parameters");
             Writer.StartArray();
-            for (auto& arg : node.arguments)
+            for (auto& arg : node.parameters)
                 VisitNode(*arg);
             Writer.EndArray();
         }
@@ -218,7 +218,7 @@ namespace hp {
     }
 
     //--------------------------------------------------------------------------------------------------
-    bool Parser::ParseStatement()
+    bool Parser::ParseStatement(Token* const CurrentClass)
     {
         Token token;
         if (!GetToken(token))
@@ -226,7 +226,7 @@ namespace hp {
             return false;
         }
 
-        if (!ParseDeclaration(token))
+        if (!ParseDeclaration(token, CurrentClass))
         {
             throw std::string("ParseDeclaration failed");
         }
@@ -235,7 +235,7 @@ namespace hp {
     }
 
     //--------------------------------------------------------------------------------------------------
-    bool Parser::ParseDeclaration(Token &token)
+    bool Parser::ParseDeclaration(Token &token, Token* const CurrentClass)
     {
         std::vector<std::string>::const_iterator customMacroIt;
         if (token.token == "#")
@@ -253,6 +253,10 @@ namespace hp {
         else if (token.token == options.ClassNameMacro)
         {
             ParseClass(token);
+        }
+        else if (token.token == options.ConstructorNameMacro)
+        {
+            ParseConstructor(token, CurrentClass);
         }
         else if ((customMacroIt = std::find(options.FunctionNameMacro.begin(), options.FunctionNameMacro.end(), token.token)) != options.FunctionNameMacro.end())
         {
@@ -727,7 +731,7 @@ namespace hp {
 
         while (!MatchSymbol("}"))
         {
-            ParseStatement();
+            ParseStatement(&classNameToken);
         }
 
         PopScope();
@@ -788,6 +792,119 @@ namespace hp {
             }
         }
 
+    }
+
+    //--------------------------------------------------------------------------------------------------
+    void Parser::ParseConstructor(Token &token, Token* const CurrentClass)
+    {
+        if (CurrentClass == nullptr)
+        {
+            throw std::string("Not in a class"); // Expected in a class
+        }
+        Writer.StartObject();
+        Writer.String("type");
+        Writer.String("constructor");
+        Writer.String("macro");
+        Writer.String(token.token.c_str());
+        Writer.String("line");
+        Writer.Uint((unsigned)token.StartLine);
+
+        ParseComment();
+
+
+        ParseMacroMeta();
+        WriteCurrentAccessControlType();
+
+        // Parse the name of the method
+        Token nameToken;
+        if (!GetIdentifier(nameToken) || nameToken.token != CurrentClass->token)
+        {
+            throw std::string("Expected class name"); // Expected class name
+        }
+
+        Writer.String("name");
+        Writer.String(nameToken.token.c_str());
+
+        Writer.String("parameters");
+        Writer.StartArray();
+
+        // Start parameter list from here
+        MatchSymbol("(");
+
+        // Is there an parameter list in the first place or is it closed right away?
+        if (!MatchSymbol(")"))
+        {
+            // Walk over all parameters
+            do
+            {
+                Writer.StartObject();
+
+                // Get the type of the parameter
+                Writer.String("type");
+                ParseType();
+
+                // Parse the name of the function
+                Writer.String("name");
+                if (!GetIdentifier(nameToken))
+                {
+                    throw std::string("Expected identifier"); // Expected identifier
+                }
+                Writer.String(nameToken.token.c_str());
+
+                // Parse default value
+                if (MatchSymbol("="))
+                {
+                    Writer.String("defaultValue");
+
+                    std::string defaultValue;
+                    Token token;
+                    GetToken(token);
+                    if (token.Type == TokenType::Const)
+                    {
+                        WriteToken(token);
+                    }
+                    else
+                    {
+                        do
+                        {
+                            if (token.token == "," ||
+                                token.token == ")")
+                            {
+                                UngetToken(token);
+                                break;
+                            }
+                            defaultValue += token.token;
+                        } while (GetToken(token));
+                        Writer.String(defaultValue.c_str());
+                    }
+                }
+
+                Writer.EndObject();
+            } while (MatchSymbol(",")); // Only in case another is expected
+
+            MatchSymbol(")");
+        }
+
+        Writer.EndArray();
+
+        // default?
+        if (MatchSymbol("="))
+        {
+            Token token;
+            if (!GetToken(token) || token.token != "default")
+            {
+                throw std::string("Expected nothing else than default"); // Expected nothing else than default
+            }
+
+            Writer.String("default");
+            Writer.Bool(true);
+        }
+
+        Writer.EndObject();
+
+        // Skip either the ; or the body of the function
+        Token skipToken;
+        SkipDeclaration(skipToken);
     }
 
     //--------------------------------------------------------------------------------------------------
@@ -853,21 +970,21 @@ namespace hp {
         Writer.String("name");
         Writer.String(nameToken.token.c_str());
 
-        Writer.String("arguments");
+        Writer.String("parameters");
         Writer.StartArray();
 
-        // Start argument list from here
+        // Start parameter list from here
         MatchSymbol("(");
 
-        // Is there an argument list in the first place or is it closed right away?
+        // Is there an parameter list in the first place or is it closed right away?
         if (!MatchSymbol(")"))
         {
-            // Walk over all arguments
+            // Walk over all parameters
             do
             {
                 Writer.StartObject();
 
-                // Get the type of the argument
+                // Get the type of the parameter
                 Writer.String("type");
                 ParseType();
 
@@ -989,7 +1106,7 @@ namespace hp {
             std::unique_ptr<TemplateNode> templateNode(new TemplateNode(declarator));
             do
             {
-                templateNode->arguments.emplace_back(ParseTypeNode());
+                templateNode->parameters.emplace_back(ParseTypeNode());
             } while (MatchSymbol(","));
 
             if (!MatchSymbol(">")) {
@@ -1049,7 +1166,7 @@ namespace hp {
                 }
             }
 
-            // Parse arguments
+            // Parse parameters
             std::unique_ptr<FunctionNode> funcNode(new FunctionNode());
             funcNode->returns = std::move(node);
 
@@ -1057,8 +1174,8 @@ namespace hp {
             {
                 do
                 {
-                    std::unique_ptr<FunctionNode::Argument> argument(new FunctionNode::Argument);
-                    argument->type = ParseTypeNode();
+                    std::unique_ptr<FunctionNode::Parameter> parameter(new FunctionNode::Parameter);
+                    parameter->type = ParseTypeNode();
 
                     // Get , or name identifier
                     if (!GetToken(token))
@@ -1069,14 +1186,14 @@ namespace hp {
                     // Parse optional name
                     if (token.Type == TokenType::Identifier)
                     {
-                        argument->name = token.token;
+                        parameter->name = token.token;
                     }
                     else
                     {
                         UngetToken(token);
                     }
 
-                    funcNode->arguments.emplace_back(std::move(argument));
+                    funcNode->parameters.emplace_back(std::move(parameter));
 
                 } while (MatchSymbol(","));
                 if (!MatchSymbol(")"))

@@ -52,8 +52,8 @@ namespace hp
 
     protected:
         /// Called to parse the next statement. Returns false if there are no more statements.
-        bool ParseStatement();
-        bool ParseDeclaration(Token &token);
+        bool ParseStatement(Token* const CurrentClass = nullptr);
+        bool ParseDeclaration(Token &token, Token* const CurrentClass = nullptr);
         void ParseDirective();
         bool SkipDeclaration(Token &token);
         void ParseEnum(Token &token);
@@ -71,6 +71,7 @@ namespace hp
 
         void WriteAccessControlType(AccessControlType type);
         void ParseClass(Token &token);
+        void ParseConstructor(Token &token, Token* const CurrentClass = nullptr);
         void ParseFunction(Token &token, const std::string& macroName);
 
         void ParseComment(bool WithNamespace = false);

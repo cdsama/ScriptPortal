@@ -9,6 +9,7 @@ namespace hp
     {
         std::string NamespaceMacro;
         std::string ClassNameMacro;
+        std::string ConstructorNameMacro;
         std::vector<std::string> FunctionNameMacro;
         std::string EnumNameMacro;
         std::vector<std::string> PropertyNameMacro;

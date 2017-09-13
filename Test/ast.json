@@ -39,7 +39,7 @@
                             "name": "std::string"
                         },
                         "name": "GetDiscribe",
-                        "arguments": []
+                        "parameters": []
                     },
                     {
                         "type": "property",
@@ -84,7 +84,7 @@
                             }
                         },
                         "name": "GetStrName",
-                        "arguments": [],
+                        "parameters": [],
                         "const": true
                     },
                     {
@@ -104,7 +104,7 @@
                             }
                         },
                         "name": "GetStrName2",
-                        "arguments": [],
+                        "parameters": [],
                         "const": true
                     }
                 ]
@@ -161,9 +161,142 @@
                 "name": "Object",
                 "members": [
                     {
+                        "type": "constructor",
+                        "macro": "LUA_CTOR",
+                        "line": 22,
+                        "meta": {},
+                        "access": "public",
+                        "name": "Object",
+                        "parameters": [
+                            {
+                                "type": {
+                                    "type": "reference",
+                                    "baseType": {
+                                        "const": true,
+                                        "type": "literal",
+                                        "name": "std::string"
+                                    }
+                                },
+                                "name": "_name"
+                            },
+                            {
+                                "type": {
+                                    "const": true,
+                                    "type": "literal",
+                                    "name": "int"
+                                },
+                                "name": "a"
+                            },
+                            {
+                                "type": {
+                                    "type": "reference",
+                                    "baseType": {
+                                        "const": true,
+                                        "type": "template",
+                                        "name": "std::function",
+                                        "parameters": [
+                                            {
+                                                "type": "function",
+                                                "returnType": {
+                                                    "type": "literal",
+                                                    "name": "void"
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "type": {
+                                                            "type": "literal",
+                                                            "name": "bool"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "literal",
+                                                "name": "int"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "name": "b"
+                            },
+                            {
+                                "type": {
+                                    "type": "lreference",
+                                    "baseType": {
+                                        "const": true,
+                                        "type": "literal",
+                                        "name": "int"
+                                    }
+                                },
+                                "name": "c"
+                            },
+                            {
+                                "type": {
+                                    "const": true,
+                                    "type": "pointer",
+                                    "baseType": {
+                                        "const": true,
+                                        "type": "literal",
+                                        "name": "int"
+                                    }
+                                },
+                                "name": "d"
+                            },
+                            {
+                                "type": {
+                                    "type": "pointer",
+                                    "baseType": {
+                                        "type": "pointer",
+                                        "baseType": {
+                                            "type": "literal",
+                                            "name": "int"
+                                        }
+                                    }
+                                },
+                                "name": "e"
+                            },
+                            {
+                                "type": {
+                                    "type": "pointer",
+                                    "baseType": {
+                                        "type": "pointer",
+                                        "baseType": {
+                                            "const": true,
+                                            "type": "literal",
+                                            "name": "int"
+                                        }
+                                    }
+                                },
+                                "name": "f"
+                            },
+                            {
+                                "type": {
+                                    "type": "reference",
+                                    "baseType": {
+                                        "const": true,
+                                        "type": "literal",
+                                        "name": "int"
+                                    }
+                                },
+                                "name": "g"
+                            },
+                            {
+                                "type": {
+                                    "type": "reference",
+                                    "baseType": {
+                                        "const": true,
+                                        "type": "literal",
+                                        "name": "int"
+                                    }
+                                },
+                                "name": "h"
+                            }
+                        ]
+                    },
+                    {
                         "type": "function",
                         "macro": "LUA_FUNCTION",
-                        "line": 31,
+                        "line": 32,
                         "comment": "Get name of an object.",
                         "meta": {
                             "name": "GetNameFunc"
@@ -178,12 +311,12 @@
                             }
                         },
                         "name": "GetName",
-                        "arguments": []
+                        "parameters": []
                     },
                     {
                         "type": "property",
                         "macro": "LUA_CALLBACK",
-                        "line": 36,
+                        "line": 37,
                         "meta": {
                             "name": "OnObjEnd"
                         },
@@ -192,14 +325,14 @@
                             "static": true,
                             "type": "template",
                             "name": "std::function",
-                            "arguments": [
+                            "parameters": [
                                 {
                                     "type": "function",
                                     "returnType": {
                                         "type": "literal",
                                         "name": "void"
                                     },
-                                    "arguments": []
+                                    "parameters": []
                                 }
                             ]
                         },
@@ -239,7 +372,7 @@
                             }
                         },
                         "name": "GetPlayerManager",
-                        "arguments": []
+                        "parameters": []
                     },
                     {
                         "type": "function",
@@ -253,7 +386,7 @@
                             "name": "std::string"
                         },
                         "name": "GetPlayerManagerVersion",
-                        "arguments": []
+                        "parameters": []
                     },
                     {
                         "type": "function",
@@ -266,7 +399,7 @@
                             "name": "int"
                         },
                         "name": "TestCFunction1",
-                        "arguments": [
+                        "parameters": [
                             {
                                 "type": {
                                     "type": "pointer",
@@ -291,7 +424,7 @@
                             "name": "int"
                         },
                         "name": "TestCFunction2",
-                        "arguments": [
+                        "parameters": [
                             {
                                 "type": {
                                     "type": "pointer",
@@ -308,7 +441,6 @@
                         "type": "function",
                         "macro": "LUA_CFUNCTION",
                         "line": 31,
-                        "comment": "Get name of an object.",
                         "meta": {
                             "global": null
                         },
@@ -319,7 +451,7 @@
                             "name": "int"
                         },
                         "name": "TestCFunction3",
-                        "arguments": [
+                        "parameters": [
                             {
                                 "type": {
                                     "type": "pointer",
@@ -346,7 +478,7 @@
                             }
                         },
                         "name": "GetPlayer",
-                        "arguments": []
+                        "parameters": []
                     }
                 ]
             },
@@ -360,7 +492,7 @@
                     "name": "std::string"
                 },
                 "name": "GetCurrentTime",
-                "arguments": []
+                "parameters": []
             },
             {
                 "type": "namespace",
@@ -377,7 +509,7 @@
                             "name": "std::string"
                         },
                         "name": "GetCurrentTimeTest",
-                        "arguments": []
+                        "parameters": []
                     }
                 ]
             }

@@ -62,7 +62,7 @@ namespace hp
             name(n) {}
 
         std::string name;
-        std::vector<std::unique_ptr<TypeNode>> arguments;
+        std::vector<std::unique_ptr<TypeNode>> parameters;
     };
 
     struct LiteralNode : public TypeNode
@@ -78,7 +78,7 @@ namespace hp
     {
         FunctionNode() : TypeNode(TypeNode::Type::Function) {}
 
-        struct Argument
+        struct Parameter
         {
             std::string name;
             std::unique_ptr<TypeNode> type;
@@ -86,7 +86,7 @@ namespace hp
 
 
         std::unique_ptr<TypeNode> returns;
-        std::vector<std::unique_ptr<Argument>> arguments;
+        std::vector<std::unique_ptr<Parameter>> parameters;
     };
 
     struct ITypeNodeVisitor

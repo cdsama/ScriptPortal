@@ -35,6 +35,11 @@ struct CodeGenerator::Impl
         bool IsCFunction = false;
     };
 
+    struct CppClassConstructor : ContentNode {
+        std::string Comment;
+        std::string Params;
+    };
+
     struct LuaData : ContentNode {
         std::string Comment;
         bool Writeable;
@@ -287,6 +292,7 @@ struct CodeGenerator::Impl
             if (GenerateData(Node, NamespaceStack)
                 && GenerateEnum(Node, NamespaceStack)
                 && GenerateFunction(Node, NamespaceStack)
+                && GenerateConstructor(Node, NamespaceStack)
                 )
             {
                 std::cerr << "Invalid Node:" << Node->Name << std::endl;
@@ -295,6 +301,17 @@ struct CodeGenerator::Impl
 
         NamespaceStack.pop_back();
         ssNormal << "\t.EndClass()\n";
+        return false;
+    }
+
+    bool GenerateConstructor(const std::shared_ptr<ContentNode>& Node, std::list<std::string>& NamespaceStack)
+    {
+        auto ConstructorNode = dynamic_cast<CppClassConstructor*>(Node.get());
+        if (ConstructorNode == nullptr)
+        {
+            return true;
+        }
+        ssNormal << "\t.Def(luaportal::Constructor<" << ConstructorNode->Params << ">())\n";
         return false;
     }
 
@@ -540,9 +557,83 @@ struct CodeGenerator::Impl
             {
                 Class->Nodes.push_back(ParseEnum(Unit));
             }
+            else if (type == "constructor")
+            {
+                Class->Nodes.push_back(ParseConstructor(Unit));
+            }
         }
         TryGetComment(ClassObject, Class->Comment);
         return Class;
+    }
+
+    std::string GetParamsArrayDesc(const Document::ValueType& Params, bool OnlyType)
+    {
+        auto ParamsSize = Params.Size();
+        std::string ParamsString = "";
+        for (decltype(ParamsSize) i = 0; i < ParamsSize; ++i)
+        {
+            auto& Param = OnlyType ? Params[i] : Params[i]["type"];
+            ParamsString.append(GetParamTypeDesc(Param));
+            if (i < ParamsSize - 1)
+            {
+                ParamsString.append(", ");
+            }
+        }
+        return ParamsString;
+    }
+
+    std::string GetParamTypeDesc(const Document::ValueType& TypeObject)
+    {
+        std::string Desc = "";
+        auto ConstItr = TypeObject.FindMember("const");
+        std::string TypeType = TypeObject["type"].GetString();
+        bool IsConst = (ConstItr != TypeObject.MemberEnd() && ConstItr->value.GetBool());
+        if (TypeType == "pointer")
+        {
+            Desc.append(GetParamTypeDesc(TypeObject["baseType"]).append("*"));
+
+            if (IsConst)
+            {
+                Desc.append(" const");
+            }
+            IsConst = false;
+        }
+        else if (TypeType == "literal")
+        {
+            Desc.append(TypeObject["name"].GetString());
+        }
+        else if (TypeType == "reference")
+        {
+            Desc.append(GetParamTypeDesc(TypeObject["baseType"]).append("&"));
+        }
+        else if (TypeType == "lreference")
+        {
+            Desc.append(GetParamTypeDesc(TypeObject["baseType"]).append("&&"));
+        }
+        else if (TypeType == "template")
+        {
+            Desc.append(TypeObject["name"].GetString()).append("<").append(GetParamsArrayDesc(TypeObject["parameters"], true)).append(">");
+        }
+        else if (TypeType == "function")
+        {
+            Desc.append(GetParamTypeDesc(TypeObject["returnType"])).append("(").append(GetParamsArrayDesc(TypeObject["parameters"], false)).append(")");
+        }
+
+        if (IsConst)
+        {
+            Desc.insert(0, "const ");
+        }
+
+        return Desc;
+    }
+
+    std::shared_ptr<CppClassConstructor> ParseConstructor(const Document::ValueType& ConstructorObject)
+    {
+        std::shared_ptr<CppClassConstructor> Constructor = std::make_shared<CppClassConstructor>();
+        Constructor->Params = GetParamsArrayDesc(ConstructorObject["parameters"], false);
+
+        TryGetComment(ConstructorObject, Constructor->Comment);
+        return Constructor;
     }
 
     std::shared_ptr<LuaFunction> ParseFunction(const Document::ValueType& FunctionObject)
