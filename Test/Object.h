@@ -35,7 +35,7 @@ public:
     }
 
     LUA_CALLBACK(name = OnObjEnd)
-    static std::function<void()> OnEnd;
+    inline static std::function<void()> OnEnd;
 
 private:
     std::string name;

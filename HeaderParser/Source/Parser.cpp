@@ -1085,10 +1085,11 @@ namespace hp {
         std::unique_ptr<TypeNode> node;
         Token token;
 
-        bool isConst = false, isVolatile = false, isMutable = false, isStatic = false;
+        bool isConst = false, isVolatile = false, isMutable = false, isStatic = false, isInline = false;
         for (bool matched = true; matched;)
         {
-            matched = (!isConst && (isConst = MatchIdentifier("const"))) ||
+            matched = (!isInline && (isInline = MatchIdentifier("inline"))) ||
+                (!isConst && (isConst = MatchIdentifier("const"))) ||
                 (!isVolatile && (isVolatile = MatchIdentifier("volatile"))) ||
                 (!isMutable && (isMutable = MatchIdentifier("mutable"))) || 
                 (!isStatic && (isStatic = MatchIdentifier("static")));

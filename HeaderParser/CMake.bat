@@ -1,9 +1,11 @@
 @echo off
 cd /d "%~dp0"
 
-REM get visual studio installation directory from registry
-for /f "tokens=1,2*" %%a in ('reg query "HKEY_CURRENT_USER\SOFTWARE\Microsoft\VisualStudio\14.0_Config" /v "InstallDir" ^| findstr "InstallDir"') do (
-set VS_HOME=%%c
+rem VS2017U2 contains vswhere.exe
+if "%VSWHERE%"=="" set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
+
+for /f "usebackq tokens=*" %%i in (`"%VSWHERE%" -latest -products * -requires Microsoft.Component.MSBuild -property installationPath`) do (
+  set VS_HOME=%%i
 )
 
 if not exist Build (
@@ -12,10 +14,10 @@ if not exist Build (
 
 cd Build
 
-cmake -G "Visual Studio 14 2015 Win64" ..
+cmake -G "Visual Studio 15 2017 Win64" ..
 
 echo %VS_HOME%
 
-"%VS_HOME%devenv.com" "HeaderParser.sln" /project "INSTALL" /rebuild "Release|x64"
+"%VS_HOME%\Common7\IDE\devenv.com" "HeaderParser.sln" /project "INSTALL" /rebuild "Release|x64"
 
 pause
